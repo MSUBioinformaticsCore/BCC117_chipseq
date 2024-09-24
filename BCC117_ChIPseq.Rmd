@@ -1,0 +1,115 @@
+---
+title: "BCC117 ChIP-seq"
+author: "Stephanie Hickey"
+date: "`r format(Sys.time(), '%m/%d/%y')`"
+css: /Users/stephanielepp/Desktop/repos/Projects/naegeler/20230427_naegeler_pool_seq/src/report_styles.css
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval=FALSE)
+```
+
+## Set up
+
+### Set paths
+```{bash, eval=FALSE}
+## set paths
+PIPES=/mnt/research/bioinformaticsCore/pipelines
+PROJECT=/mnt/research/bioinformaticsCore/projects/thomashowm/BCC117_chipseq
+GENOME=/mnt/research/bioinformaticsCore/shared/Genomes
+SOFTWARE=/mnt/research/bioinformaticsCore/software
+```
+
+### Set project directories
+```{bash}
+mkdir $PROJECT/data
+mkdir $PROJECT/results
+mkdir $PROJECT/src
+mkdir $PROJECT/run
+```
+
+### Make temp and run directories
+```{bash, eval=FALSE}
+mkdir $SCRATCH/thomashowm
+mkdir $SCRATCH/thomashowm/BCC117_chipseq
+```
+
+### Download reference genome and annotation
+```{bash, eval=FALSE}
+mkdir $GENOME/arabidopsis_thaliana
+mkdir $GENOME/arabidopsis_thaliana/ensembl_release59
+cd $GENOME/arabidopsis_thaliana/ensembl_release59
+
+wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/arabidopsis_thaliana/dna/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa.gz 
+
+wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/gff3/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.59.gff3.gz
+
+mv $GENOME/arabidopsis_thaliana/ensembl_release59/Arabidopsis_thaliana.TAIR10.59.gff3.gz $GENOME/arabidopsis_thaliana/ensembl_release59/Arabidopsis_thaliana.TAIR10.59.gff.gz 
+
+gunzip $GENOME/arabidopsis_thaliana/ensembl_release59/Arabidopsis_thaliana.TAIR10.59.gff.gz
+```
+
+### Make sample sheets
+
+### Download exclusion regions
+
+Using `excluderanges` package
+
+## Install nfcore/sarek pipeline if you haven't already
+
+### Create and activate a new Conda environment with nf-core and nextflow if you haven't already
+
+```{bash}
+module purge
+module load Conda/3
+which conda 
+
+# if you haven't already
+conda create \
+  --name nf-core\
+  python=3.8 \
+  nf-core nextflow 
+
+# activate the environment 
+conda activate nf-core
+```
+
+### Download the most recent nf-core sigularity container if you haven't already
+
+Make a folder in the pipelines directory called `nfcore_chipseq`
+```{bash}
+PIPES=/mnt/research/bioinformaticsCore/pipelines
+mkdir $PIPES/nfcore_chipseq
+```
+
+Download the most recent nf-core singularity container if you haven't already
+```{bash}
+cd $PIPES/nfcore_chipseq
+
+nf-core download chipseq \
+  -r 2.0.0 \
+  -x none \
+  -s singularity 
+```
+
+## Run the nf-core chipseq pipeline
+
+```{bash}
+nextflow run $PIPES/nfcore_chipseq/nf-core-chipseq_2.0.0/2_0_0 \
+  --input $PROJECT/data/sample_sheet.csv \
+  --outdir $PROJECT/results \
+  --fasta $GENOME/arabidopsis_thaliana/ensembl_release59/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa \
+  --gff $GENOME/arabidopsis_thaliana/ensembl_release59/Arabidopsis_thaliana.TAIR10.59.gff \
+  --blacklist $GENOME/arabidopsis_thaliana/TAIR10.Klasfeld.arabidopsis_greenscreen_20inputs.bed \
+  --narrow_peak \
+  --read_length 150 \
+  -profile singularity \
+  -c $PIPES/nfcore_chipseq/src/slurm.config.sh \
+  -w $SCRATCH/thomashowm/BCC117_chipseq \
+  -resume boring_wing
+
+```

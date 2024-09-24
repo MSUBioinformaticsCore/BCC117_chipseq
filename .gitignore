@@ -3,3 +3,7 @@
 .RData
 .Ruserdata
 
+~/data/*.fastq.gz
+~/data/FastQC
+~/results
+~/run 

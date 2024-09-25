@@ -53,7 +53,7 @@ mv $GENOME/arabidopsis_thaliana/ensembl_release59/Arabidopsis_thaliana.TAIR10.59
 gunzip $GENOME/arabidopsis_thaliana/ensembl_release59/Arabidopsis_thaliana.TAIR10.59.gff.gz
 ```
 
-### Make sample sheets
+### Make nf-core sample sheet
 
 ### Download exclusion regions
 
@@ -143,5 +143,100 @@ sed -i "s/secondary/${g}_consensus/g" "${g}.nobl.consensus.narrowPeak_all.bed"
 sed -i "s/primary/${g}_consensus/g" "${g}.nobl.consensus.narrowPeak_optimal.bed"
 sed -i "s/secondary/${g}_consensus/g" "${g}.nobl.consensus.narrowPeak_optimal.bed"
 done
+```
+
+## Differential binding analysis
+
+We used [DiffBind v3.8.4](https://bioconductor.org/packages/release/bioc/html/DiffBind.html) to identify peaks differentially bound between each pair of conditions. Specifically, for each pair of conditions, a union peakset was derived that includes the consensus peaks from both conditions. For each replicate of the two conditions, the reads within the union peak set are counted and normalized by the total read depth. Then, the normalized counts from each condition are compared to see if there is a significant difference (FDR < .05) in the number of reads within each peak between conditions. 
+
+This code outputs `.csv` files containing the locations, fold changes, and p-values for differentially bound peaks, volcano plots and binding profile heat maps for significantly gained and lost peaks.
+
+### DiffBind Sample sheet
+
+This is a `.csv` file with the following columns:
+
+1. `SampleID`
+1. `Condition`    
+2. `Replicate`
+3. `bamReads`: path to the IP `.bam` file
+4. `bamControl`: path to the input `.bam` file
+5. `Peaks`: path to the consensus peak `.bed` files
+6. `PeakCaller`: bed
+
+See `sample_sheets/DiffBind_samplesheet_consensus` for an example 
+
+### Greylists
+
+From the Diffbind tutorial:
+
+> Greylists are specific to a ChIP-seq experiment, and are derived from the controls generated as part of the experiment[4]. The idea is to analyze libraries that are not meant to show systematic enrichment (such as Inputs, in which no anti-body is introduced), and identify anomalous regions where a disproportionate degree of signal is present. These regions can then be excluded from subsequent analysis.
+>  Application of greylists prevents identification of problematic genomic regions in the materials used in the experiment as being differentially bound. For example, these could include areas of high copy-number alterations in a cell line.
+>  Prior to version 3.0, the default in DiffBind has been to simply subtract control reads from ChIP reads in order to dampen the magnitude of enrichment in anomalous regions. Greylists represent a more principled way of accomplishing this. If a greylist has been applied, the current default in DiffBind is to not subtract control reads.
+
+### Run `runDiffBind.sh`
+
+*Required R Packages*
+
+* DiffBind    
+* tidyverse   
+* parallel    
+
+**Arguments**
+
+1. Path to sample sheet   
+2. Path to results dir    
+3. Whether to use a greylist TRUE/FALSE     
+4. Path to `DiffBind.R`   
+
+**Output**
+
+* new `diffbind` directory to hold the results
+* `diffbind/*.csv` with the DiffBind results
+* `diffbind/*_volcano_plot.pdf` 
+* `diffbind/*_profile_plot.pdf`      
+
+```{bash, eval=F}
+
+cd $PROJECT/run
+
+sbatch $SRC/src/runDiffBind.sh \
+  $PROJECT/data/DiffBind_samplesheet_consensus.csv \
+  $PROJECT/results \ 
+  TRUE \
+  $SRC/src/DiffBind.R
+  
+sbatch $SRC/src/runDiffBind.sh \
+  $PROJECT/data/DiffBind_samplesheet_consensus.csv \
+  $PROJECT/results \
+  FALSE \
+  $SRC/src/DiffBind.R
+
+```
+
+## Find overlapping peak sets
+
+Compare up to 5 sets.
+
+*Required R Packages*
+* ChIPpeakAnno  
+* tidyverse  
+* UpSetR  
+
+**Arguments**
+1. Path to sample sheet 
+2. Path to results dir 
+3. Path to `peakUpset.R`
+
+**Output**
+* `overlaps/*_shared_peaks.csv` files listing shared and unique peaks
+* `overlaps/*_upset.pdf` plots showing the number of unique and overlapping peaks 
+
+```{bash}
+cd $PROJECT/run
+
+sbatch $SRC/src/run_peakUpset.sh \
+  $PROJECT/data/overlap_sample_sheet.csv \
+  $PROJECT/results \
+  $SRC/src/peakUpset.R
 ```
 

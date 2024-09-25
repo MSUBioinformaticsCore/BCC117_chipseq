@@ -59,7 +59,7 @@ gunzip $GENOME/arabidopsis_thaliana/ensembl_release59/Arabidopsis_thaliana.TAIR1
 
 Using `excluderanges` package
 
-## Install nfcore/sarek pipeline if you haven't already
+## Install nfcore/chipseq pipeline if you haven't already
 
 ### Create and activate a new Conda environment with nf-core and nextflow if you haven't already
 
@@ -113,3 +113,35 @@ nextflow run $PIPES/nfcore_chipseq/nf-core-chipseq_2.0.0/2_0_0 \
   -resume boring_wing
 
 ```
+
+## Find high confidence peaks for each condition with Chip-R
+
+Install Chip-R
+```{bash}
+conda install chip-r
+```
+
+Run Chip-R
+```{bash}
+cd $PROJECT/results/bwa/mergedLibrary/macs2/narrowPeak
+
+for g in cold warm
+do 
+chipr \
+  -i ${g}*_peaks.narrowPeak \
+  -m 2 \
+  -o ${g}.consensus.narrowPeak
+done
+```
+
+Add condition name to consensus peak ids
+```{bash}
+for g in cold warm
+do 
+sed -i "s/primary/${g}_consensus/g" "${g}.nobl.consensus.narrowPeak_all.bed"
+sed -i "s/secondary/${g}_consensus/g" "${g}.nobl.consensus.narrowPeak_all.bed"
+sed -i "s/primary/${g}_consensus/g" "${g}.nobl.consensus.narrowPeak_optimal.bed"
+sed -i "s/secondary/${g}_consensus/g" "${g}.nobl.consensus.narrowPeak_optimal.bed"
+done
+```
+

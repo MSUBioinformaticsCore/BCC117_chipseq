@@ -163,7 +163,13 @@ This is a `.csv` file with the following columns:
 5. `Peaks`: path to the consensus peak `.bed` files
 6. `PeakCaller`: bed
 
-See `sample_sheets/DiffBind_samplesheet_consensus` for an example 
+```{bash}
+module purge
+module load R-bundle-CRAN/2023.12-foss-2023a
+
+# specific for this project
+Rscript $PROJECT/src/makeDiffBindSampleSheet.R
+```
 
 ### Greylists
 

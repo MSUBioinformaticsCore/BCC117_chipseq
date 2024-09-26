@@ -24,6 +24,8 @@ if(!"DiffBind" %in% installed) {
 
 if(!"profileplyr" %in% installed) {
   
+  install_version("ggnewscale", version = "0.4.9")
+  
   if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
   
@@ -39,13 +41,6 @@ if(!"tidyverse" %in% installed) {
   
 }
 
-# parallel
-
-if(!"parallel" %in% installed) {
-  
-  install.packages("parallel")
-  
-}
 
 library(DiffBind)
 library(tidyverse)
@@ -54,67 +49,44 @@ library(parallel)
 # set up ------------------------------------------------------------------
 
 results.dir = args[2]
-# results.dir = "/mnt/research/bioinformaticsCore/projects/grossmanl/20221220_ChIPSeq/results"
+# results.dir = "/mnt/ufs18/rs-013/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/results/bwa/mergedLibrary"
 diffbind.dir = paste0(results.dir, "/diffbind")
 if(!dir.exists(diffbind.dir)){dir.create(diffbind.dir)}
 
 # Load sample sheet  -------------------------------------------------------
 
-# samples = read.csv("/mnt/research/bioinformaticsCore/projects/grossmanl/20221220_ChIPSeq/data/DiffBind_samplesheet_consensus.csv")
+# samples = read.csv("/mnt/ufs18/rs-013/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/data/sample_sheets/DiffBind_sample_sheet.csv")
 samples = read.csv(args[1])
 
-# DBA for each comparison -------------------------------------------------
-
-sample_list = list()
-dbaList = list()
+# list the pairwise comparisons -----------------------------------
 
 conditions = unique(samples$Condition)
 comparisons = combn(conditions, 2, simplify = FALSE)
-comparisons = lapply(comparisons, function(x) {x[order(x)]})
+# comparisons = lapply(comparisons, function(x) {x[order(x)]})
 
-for (i in 1:length(comparisons)){
-  
-  sample_list[[i]] = 
-    samples %>%
-    filter(Condition %in% comparisons[[i]])
-  
-  dbaList[[i]] = dba(sampleSheet=sample_list[[i]], bRemoveM=FALSE)
+# make DBA object -------------------------------------------------
 
-}
+dbaOb = dba(sampleSheet= samples, bRemoveM=FALSE)
 
 # count and normalize ----------------------------------------
 
-# dbaOb <- dba.count(dbaOb)
-
-dbaList = mclapply(dbaList, 
-                   dba.count, 
-                   mc.cores = detectCores()-1)
-
-# dbaOb <- dba.normalize(dbaOb)
-
-dbaList = mclapply(dbaList, 
-                   dba.normalize, 
-                   mc.cores = detectCores()-1)
+dbaOb <- dba.count(dbaOb)
+dbaOb <- dba.normalize(dbaOb)
 
 # model design ------------------------------------------------------------
 
-dbaList = mclapply(dbaList, 
-                   dba.contrast, 
-                   mc.cores = detectCores()-1)
+dbaOb = dba.contrast(dbaOb)
 
 # Differential binding ----------------------------------------------------
+
+dbaOb <- dba.analyze(dbaOb, bGreylist=TRUE, bBlacklist=FALSE)
+
 
 if(args[3]){
   
   print(paste0("use greylist =", args[3]))
   
-  #dbaOb <- dba.analyze(dbaOb, bGreylist=TRUE, bBlacklist=FALSE)
-  
-  dbaList = mclapply(dbaList, 
-                     dba.analyze, 
-                     bGreylist=TRUE,
-                     bBlacklist=FALSE,
-                     mc.cores = detectCores()-1)
+  dbaOb <- dba.analyze(dbaOb, bGreylist=TRUE, bBlacklist=FALSE)
   
   file_tag="_greylisted"
   
@@ -122,53 +94,48 @@ if(args[3]){
   
   print(paste0("use greylist =", args[3]))
   
-  dbaList = mclapply(dbaList, 
-                     dba.analyze, 
-                     bGreylist=FALSE,
-                     bBlacklist=FALSE,
-                     mc.cores = detectCores()-1)
+  dbaOb <- dba.analyze(dbaOb, bGreylist=FALSE, bBlacklist=FALSE)
+  
   file_tag=""
   
 }
 
 # save DBA ----------------------------------------------------------------
 
-save(dbaList, file = paste0(diffbind.dir, "/DBAlist", file_tag, ".Rdata"))
+save(dbaOb, file = paste0(diffbind.dir, "/DBA", file_tag, ".Rdata"))
 
 # output results ----------------------------------------------------------
 
-res_list = list()
-
-for (i in 1:length(dbaList)) {
+for (i in 1:length(dbaOb$contrasts)) {
   
-  group1 = comparisons[[i]][1]
-  group2 = comparisons[[i]][2]
-
-  res_list[[i]] = dba.report(dbaList[[i]], 
-                            contrast=1, 
-                            th = .05, 
-                            fold = 0, 
-                            DataType = "DBA_DATA_FRAME")
+  group1 = dbaOb$contrasts[[i]]$name1
+  group2 = dbaOb$contrasts[[i]]$name2
   
-  names(res_list[[i]])[names(res_list[[i]]) == 'p-value'] <- 'pvalue'
+  res = dba.report(dbaOb, 
+                   contrast=i, 
+                   th = .05, 
+                   fold = 0, 
+                   DataType = "DBA_DATA_FRAME")
   
-  res_list[[i]] =
-    res_list[[i]] %>%
+  names(res)[names(res) == 'p-value'] <- 'pvalue'
+  
+  res =
+    res %>%
     mutate(Contrast = paste0(group1, "_vs_", group2)) %>%
     mutate(peakID=row_number()) %>%
     mutate(peakID=paste0(group1, "_vs_", group2, "_peak", peakID))
-   
-  write.csv(res_list[[i]], 
-              file = paste0(diffbind.dir, 
-                            "/", group1, "_vs_", group2,
-                            file_tag, ".csv"))
+  
+  write.csv(res, 
+            file = paste0(diffbind.dir, 
+                          "/", group1, "_vs_", group2,
+                          file_tag, ".csv"))
   
   print(paste0(diffbind.dir, 
                "/", group1, "_vs_", group2,
                file_tag, ".csv saved"))
   
   bed = 
-    res_list[[i]] %>%
+    res %>%
     mutate(Strand = ".") %>%
     mutate(score = -10*log10(FDR)) %>%
     select(Chr,
@@ -182,54 +149,62 @@ for (i in 1:length(dbaList)) {
            FDR)
   
   write.table(bed, 
-            file = paste0(diffbind.dir, 
-                          "/", group1, "_vs_", group2,
-                          file_tag, ".bed"),
-            sep="\t",
-            quote=F,
-            row.names=F,
-            col.names=F)
+              file = paste0(diffbind.dir, 
+                            "/", group1, "_vs_", group2,
+                            file_tag, ".bed"),
+              sep="\t",
+              quote=F,
+              row.names=F,
+              col.names=F)
   
   print(paste0(diffbind.dir, 
                "/", group1, "_vs_", group2,
                file_tag, ".bed saved"))
-  }
+}
 
 # volcano plots -----------------------------------------------------------
 
-for (i in 1:length(dbaList)){
+for (i in 1:length(dbaOb$contrasts)){
   
-  group1 = comparisons[[i]][1]
-  group2 = comparisons[[i]][2]
+  group1 = dbaOb$contrasts[[i]]$name1
+  group2 = dbaOb$contrasts[[i]]$name2
   
   pdf(file = paste0(diffbind.dir, "/", group1, "_vs_", group2, file_tag, "_volcano_plot.pdf"))
-  dba.plotVolcano(dbaList[[i]],
-                  contrast=1, 
+  dba.plotVolcano(dbaOb,
+                  contrast=i, 
                   th = .05)
   dev.off()
   print(paste0(diffbind.dir, "/", group1, "_vs_", group2, file_tag, "_volcano_plot.pdf saved"))
 }
 
 # Profile plots -----------------------------------------------------------
+# https://content.cruk.cam.ac.uk/bioinformatics/software/DiffBind/plotProfileDemo.html
 
 library(profileplyr)
 
-profiles = mclapply(dbaList, dba.plotProfile, sites=1, merge=FALSE)
+profiles_list = list() 
 
-for (i in 1:length(profiles)){
+for (i in 1:length(dbaOb$contrasts)){
   
-  group1 = comparisons[[i]][1]
-  group2 = comparisons[[i]][2]
+  rep = dba.report(dbaOb, 
+                   contrast=i, 
+                   th = .05) 
   
-  labs = c(paste0(group1, "_rep1"),
-           paste0(group1, "_rep2"),
-           paste0(group1, "_rep3"),
-           paste0(group2, "_rep1"),
-           paste0(group2, "_rep2"),
-           paste0(group2, "_rep3"))
+  repList <- GRangesList(Gain=rep[rep$Fold>0,],Loss=rep[rep$Fold<0,])
   
-  rownames(sampleData(profiles[[i]])) = labs
-             
+  sample_names = names(which(dbaOb$contrasts[[i]]$group1 | dbaOb$contrasts[[i]]$group2 == TRUE))
+  
+  profiles_list[[i]] = dba.plotProfile(dbaOb, 
+                                       samples = dbaOb$contrasts[[i]]$group1 | dbaOb$contrasts[[i]]$group2,
+                                       sites=repList, 
+                                       scores="Fold",
+                                       merge=FALSE)
+  
+  rownames(sampleData(profiles_list[[i]])) = sample_names
+  
+  group1 = dbaOb$contrasts[[i]]$name1
+  group2 = dbaOb$contrasts[[i]]$name2
+  
   pdf(file = paste0(diffbind.dir, 
                     "/",
                     group1, 
@@ -237,12 +212,15 @@ for (i in 1:length(profiles)){
                     group2, 
                     file_tag, "_profile_plot.pdf"),
       width = 8)
-  dba.plotProfile(profiles[[i]])
+  dba.plotProfile(profiles_list[[i]])
   dev.off()
+  
   print(paste0(diffbind.dir, "/", group1, "_vs_", group2, file_tag, "_profile_plot.pdf saved"))
   
 }
 
+save(profiles_list[[i]], file = paste0(diffbind.dir,"profiles.Rdata"))
+     
 # session info ------------------------------------------------------------
-
 sessionInfo()
+     

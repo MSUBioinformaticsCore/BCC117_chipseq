@@ -3,7 +3,6 @@
 #' @param args[2] path to anno files
 args <- commandArgs(TRUE)
 
-.libPaths("/mnt/research/bioinformaticsCore/software/R.4.1.0")
 library(tidyverse)
 
 # set up ------------------------------------------------------------------

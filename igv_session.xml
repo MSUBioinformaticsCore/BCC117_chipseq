@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Session genome="../../genome/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa" hasGeneTrack="true" hasSequenceTrack="true" locus="All" version="8">
+	<Resources>
+		<Resource path="../../bwa/mergedLibrary/bigwig/cold_IP2.bigWig"/>
+		<Resource path="../../bwa/mergedLibrary/bigwig/warm_input4.bigWig"/>
+		<Resource path="../../bwa/mergedLibrary/bigwig/warm_IP4.bigWig"/>
+		<Resource path="../../bwa/mergedLibrary/bigwig/warm_input2.bigWig"/>
+		<Resource path="../../bwa/mergedLibrary/bigwig/cold_input2.bigWig"/>
+		<Resource path="../../bwa/mergedLibrary/bigwig/cold_IP3.bigWig"/>
+		<Resource path="../../bwa/mergedLibrary/bigwig/cold_IP1.bigWig"/>
+		<Resource path="../../bwa/mergedLibrary/bigwig/cold_input3.bigWig"/>
+		<Resource path="../../bwa/mergedLibrary/bigwig/cold_IP4.bigWig"/>
+		<Resource path="../../bwa/mergedLibrary/bigwig/warm_IP1.bigWig"/>
+		<Resource path="../../bwa/mergedLibrary/bigwig/cold_input4.bigWig"/>
+		<Resource path="../../bwa/mergedLibrary/bigwig/cold_input1.bigWig"/>
+		<Resource path="../../bwa/mergedLibrary/bigwig/warm_input1.bigWig"/>
+		<Resource path="../../bwa/mergedLibrary/bigwig/warm_IP2.bigWig"/>
+		<Resource path="../../bwa/mergedLibrary/macs2/narrowPeak/consensus/CAMTA3/CAMTA3.consensus_peaks.bed"/>
+		<Resource path="../../bwa/mergedLibrary/macs2/narrowPeak/cold_IP2_peaks.narrowPeak"/>
+		<Resource path="../../bwa/mergedLibrary/macs2/narrowPeak/cold_IP3_peaks.narrowPeak"/>
+		<Resource path="../../bwa/mergedLibrary/macs2/narrowPeak/warm_IP4_peaks.narrowPeak"/>
+		<Resource path="../../bwa/mergedLibrary/macs2/narrowPeak/cold_IP1_peaks.narrowPeak"/>
+		<Resource path="../../bwa/mergedLibrary/macs2/narrowPeak/warm_IP2_peaks.narrowPeak"/>
+		<Resource path="../../bwa/mergedLibrary/macs2/narrowPeak/cold_IP4_peaks.narrowPeak"/>
+		<Resource path="../../bwa/mergedLibrary/macs2/narrowPeak/warm_IP1_peaks.narrowPeak"/>
+	</Resources>
+	<Panel height="1160" name="DataPanel" width="1897">
+		<Track altColor="0,0,178" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="30" id="../../bwa/mergedLibrary/bigwig/cold_IP2.bigWig" name="cold_IP2.bigWig" normalize="false" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
+			<DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="10" minimum="0.0" type="LINEAR"/>
+		</Track>
+		<Track altColor="0,0,178" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="30" id="../../bwa/mergedLibrary/bigwig/warm_input4.bigWig" name="warm_input4.bigWig" normalize="false" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
+			<DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="10" minimum="0.0" type="LINEAR"/>
+		</Track>
+		<Track altColor="0,0,178" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="30" id="../../bwa/mergedLibrary/bigwig/warm_IP4.bigWig" name="warm_IP4.bigWig" normalize="false" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
+			<DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="10" minimum="0.0" type="LINEAR"/>
+		</Track>
+		<Track altColor="0,0,178" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="30" id="../../bwa/mergedLibrary/bigwig/warm_input2.bigWig" name="warm_input2.bigWig" normalize="false" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
+			<DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="10" minimum="0.0" type="LINEAR"/>
+		</Track>
+		<Track altColor="0,0,178" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="30" id="../../bwa/mergedLibrary/bigwig/cold_input2.bigWig" name="cold_input2.bigWig" normalize="false" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
+			<DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="10" minimum="0.0" type="LINEAR"/>
+		</Track>
+		<Track altColor="0,0,178" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="30" id="../../bwa/mergedLibrary/bigwig/cold_IP3.bigWig" name="cold_IP3.bigWig" normalize="false" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
+			<DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="10" minimum="0.0" type="LINEAR"/>
+		</Track>
+		<Track altColor="0,0,178" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="30" id="../../bwa/mergedLibrary/bigwig/cold_IP1.bigWig" name="cold_IP1.bigWig" normalize="false" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
+			<DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="10" minimum="0.0" type="LINEAR"/>
+		</Track>
+		<Track altColor="0,0,178" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="30" id="../../bwa/mergedLibrary/bigwig/cold_input3.bigWig" name="cold_input3.bigWig" normalize="false" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
+			<DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="10" minimum="0.0" type="LINEAR"/>
+		</Track>
+		<Track altColor="0,0,178" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="30" id="../../bwa/mergedLibrary/bigwig/cold_IP4.bigWig" name="cold_IP4.bigWig" normalize="false" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
+			<DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="10" minimum="0.0" type="LINEAR"/>
+		</Track>
+		<Track altColor="0,0,178" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="30" id="../../bwa/mergedLibrary/bigwig/warm_IP1.bigWig" name="warm_IP1.bigWig" normalize="false" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
+			<DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="10" minimum="0.0" type="LINEAR"/>
+		</Track>
+		<Track altColor="0,0,178" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="30" id="../../bwa/mergedLibrary/bigwig/cold_input4.bigWig" name="cold_input4.bigWig" normalize="false" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
+			<DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="10" minimum="0.0" type="LINEAR"/>
+		</Track>
+		<Track altColor="0,0,178" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="30" id="../../bwa/mergedLibrary/bigwig/cold_input1.bigWig" name="cold_input1.bigWig" normalize="false" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
+			<DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="10" minimum="0.0" type="LINEAR"/>
+		</Track>
+		<Track altColor="0,0,178" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="30" id="../../bwa/mergedLibrary/bigwig/warm_input1.bigWig" name="warm_input1.bigWig" normalize="false" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
+			<DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="10" minimum="0.0" type="LINEAR"/>
+		</Track>
+		<Track altColor="0,0,178" autoScale="true" clazz="org.broad.igv.track.DataSourceTrack" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="30" id="../../bwa/mergedLibrary/bigwig/warm_IP2.bigWig" name="warm_IP2.bigWig" normalize="false" renderer="BAR_CHART" sortable="true" visible="true" windowFunction="mean">
+			<DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="10" minimum="0.0" type="LINEAR"/>
+		</Track>
+		<Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" displayMode="SQUISHED" featureVisibilityWindow="-1" fontSize="10" height="20" id="../../bwa/mergedLibrary/macs2/narrowPeak/consensus/CAMTA3/CAMTA3.consensus_peaks.bed" name="CAMTA3.consensus_peaks.bed" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count"/>
+		<Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" displayMode="SQUISHED" featureVisibilityWindow="-1" fontSize="10" height="20" id="../../bwa/mergedLibrary/macs2/narrowPeak/cold_IP2_peaks.narrowPeak" name="cold_IP2_peaks.narrowPeak" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count"/>
+		<Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" displayMode="SQUISHED" featureVisibilityWindow="-1" fontSize="10" height="20" id="../../bwa/mergedLibrary/macs2/narrowPeak/cold_IP3_peaks.narrowPeak" name="cold_IP3_peaks.narrowPeak" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count"/>
+		<Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" displayMode="SQUISHED" featureVisibilityWindow="-1" fontSize="10" height="20" id="../../bwa/mergedLibrary/macs2/narrowPeak/warm_IP4_peaks.narrowPeak" name="warm_IP4_peaks.narrowPeak" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count"/>
+		<Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" displayMode="SQUISHED" featureVisibilityWindow="-1" fontSize="10" height="20" id="../../bwa/mergedLibrary/macs2/narrowPeak/cold_IP1_peaks.narrowPeak" name="cold_IP1_peaks.narrowPeak" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count"/>
+		<Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" displayMode="SQUISHED" featureVisibilityWindow="-1" fontSize="10" height="20" id="../../bwa/mergedLibrary/macs2/narrowPeak/warm_IP2_peaks.narrowPeak" name="warm_IP2_peaks.narrowPeak" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count"/>
+		<Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" displayMode="SQUISHED" featureVisibilityWindow="-1" fontSize="10" height="20" id="../../bwa/mergedLibrary/macs2/narrowPeak/cold_IP4_peaks.narrowPeak" name="cold_IP4_peaks.narrowPeak" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count"/>
+		<Track altColor="0,0,178" autoScale="false" clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" displayMode="SQUISHED" featureVisibilityWindow="-1" fontSize="10" height="20" id="../../bwa/mergedLibrary/macs2/narrowPeak/warm_IP1_peaks.narrowPeak" name="warm_IP1_peaks.narrowPeak" renderer="BASIC_FEATURE" sortable="false" visible="true" windowFunction="count"/>
+	</Panel>
+</Session>

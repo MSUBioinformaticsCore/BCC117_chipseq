@@ -1,4 +1,4 @@
-#!/bin/sh -login
+#!/bin/bash -login
 #SBATCH --mem=64GB
 #SBATCH --job-name=annotatePeaks
 #SBATCH --output=%x-%j.out

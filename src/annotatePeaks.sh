@@ -33,7 +33,6 @@ motif=$5
 
 module purge
 module load SAMtools/1.19.2-GCC-13.2.0
-module load BLAT/3.7-GCC-12.3.0
 
 cd $datadir
 

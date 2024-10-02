@@ -11,7 +11,7 @@ args <- commandArgs(TRUE)
 
 processAnno = function(annoDF){
   annoDF = annoDF %>% dplyr::rename(PeakID = colnames(annoDF)[1])
-  annoDF = left_join(annoDF,gene_map)
+  #annoDF = left_join(annoDF,gene_map)
   return(annoDF)
 }
 
@@ -24,25 +24,25 @@ addOntologyCol = function(go, ont){
 
 set.seed(1)
 source(args[1])
-# source("/mnt/research/bioinformaticsCore/pipelines/ChIPSeq/src/ChIPSeqFunctions.R")
+# source("/mnt/research/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/src/ChIPSeqFunctions.R")
 library(tidyverse)
 library(topGO)
 library(parallel)
 
 orgdb = args[5]
-# orgdb = "org.Hs.eg.db"
+# orgdb = "org.At.tair.db"
 library(orgdb, character.only=TRUE)
 
 indir = args[2]
-# indir = "/mnt/research/bioinformaticsCore/projects/grossmanl/20221220_ChIPSeq_paired_only/results/annotatePeaks"
+# indir = "/mnt/research/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/results/bwa/mergedLibrary/annotatePeaks"
 outdir = args[3]
-# outdir = "/mnt/research/bioinformaticsCore/projects/grossmanl/20221220_ChIPSeq_paired_only/results"
+# outdir = "/mnt/research/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/results/bwa/mergedLibrary"
 enrichdir = paste0(outdir, "/geneset_enrichment")
 if(!dir.exists(enrichdir)){dir.create(enrichdir)}
-# genes = read.delim("/mnt/research/bioinformaticsCore/pipelines/ChIPSeq/src/homer_genes_hg19.tsv")
+# genes = read.delim("/mnt/research/bioinformaticsCore/software/HOMER/data/accession/arabidopsis.description")
 genes = read.delim(args[6], header=T)
-genes = genes %>% dplyr::rename(Entrez.ID = "GeneID")
-gene_map = genes %>% dplyr::select(Entrez.ID, homer_symbols, current_symbols)
+# genes = genes %>% dplyr::rename(Entrez.ID = "GeneID")
+# gene_map = genes %>% dplyr::select(Entrez.ID, homer_symbols, current_symbols)
 
 # read in annotation files ------------------------------------------------
 
@@ -55,14 +55,14 @@ annoList = mclapply(annoList, processAnno, mc.cores = detectCores()-1)
 # get enriched go ---------------------------------------------------------
 
 goiList = mclapply(annoList, 
-                   function(annoDF){goi = annoDF %>% pull(current_symbols); 
+                   function(annoDF){goi = annoDF %>% pull(Gene.Name); 
                                     unique(goi)},
                    mc.cores = detectCores()-1)
 
 # these are throwing errors with mclapply for some reason :-/
 gobpList = lapply(goiList, 
                     findEnrichedGOBP,
-                    background = genes$current_symbols,
+                    background = genes$name,
                     org.db = orgdb,
                     id_type = "symbol",
                     min_size = 5,
@@ -72,7 +72,7 @@ print("findEnrichedGOBP finished")
 
 gomfList = lapply(goiList, 
                   findEnrichedGOMF,
-                  background = genes$current_symbols,
+                  background = genes$name,
                   org.db = orgdb,
                   id_type = "symbol",
                   min_size = 5,
@@ -82,7 +82,7 @@ print("findEnrichedGOMF finished")
 
 goccList = lapply(goiList, 
                   findEnrichedGOCC,
-                  background = genes$current_symbols,
+                  background = genes$name,
                   org.db = orgdb,
                   id_type = "symbol",
                   min_size = 5,
@@ -162,6 +162,7 @@ for (i in 1:length(files)){
 }
 
 print("bind results from different ontologies finished")
+names(final) = gsub(ext, ".GO", basename(files))
 save(final, file = paste0(enrichdir, "/GOenrichment", ext, ".Rdata"))
 
 print("all done!")

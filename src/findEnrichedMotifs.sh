@@ -1,4 +1,4 @@
-#!/bin/sh -login
+#!/bin/bash -login
 #SBATCH --mem=64GB
 #SBATCH --job-name=findEnrichedMotifs
 #SBATCH --output=%x-%j.out
@@ -31,7 +31,7 @@ mkdir $outdir/motif_enrichment
 ##################################################################
 
 module purge 
-module load GCC/10.2.0 BEDTools/2.30.0
+module load BEDTools/2.31.0-GCC-12.3.0
 
 cd $indir
 
@@ -54,7 +54,7 @@ done
 ##################################################################
 
 module purge
-module load GCC/10.3.0 MEME/5.4.1
+module load MEME/5.5.4-gompi-2022b
 
 cd $outdir/motif_enrichment
 

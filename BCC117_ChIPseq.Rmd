@@ -365,13 +365,19 @@ Uses `meme` and `sea` to find *de novo* motifs and enrichment for known motifs.
 ```{bash, eval=F}
 cd $PROJECT/run
 
-MOTIFDB=/mnt/research/bioinformaticsCore/shared/motif_databases/JASPAR/JASPAR2018_CORE_vertebrates_non-redundant.meme
+MOTIFDB=/mnt/research/bioinformaticsCore/shared/motif_databases/20241006_MEME_motifs/motif_databases/ARABD/ArabidopsisDAPv1.meme
 
-# individual replicates. They take forever so I submitted servel different jobs to speed things up
 sbatch $SRC/src/findEnrichedMotifs.sh \
-  $PROJECT/results/peaks \
-  $PROJECT/results \
-  .nobl.narrowPeak \
+  $PROJECT/results/bwa/mergedLibrary/diffbind \
+  $PROJECT/results/bwa/mergedLibrary \
+  .bed \
   $MOTIFDB \
-  $GENOME/hg19.fa.masked
+  $GENOME/arabidopsis_thaliana/ensembl_release59/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa
+  
+sbatch $SRC/src/findEnrichedMotifs.sh \
+  $PROJECT/results/bwa/mergedLibrary/diffbind \
+  $PROJECT/results/results/bwa/mergedLibrary/macs2/narrowPeak \
+  .narrowPeak_all.bed \
+  $MOTIFDB \
+  $GENOME/arabidopsis_thaliana/ensembl_release59/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa
 ```

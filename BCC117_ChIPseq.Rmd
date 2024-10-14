@@ -297,16 +297,16 @@ Make annotation and bed files containing only the gained or lost peaks from the 
 
 ```{bash}
 module purge
-module load GCC/8.3.0  OpenMPI/3.1.4  R/4.1.0
+module load R-bundle-CRAN/2023.12-foss-2023a
 
 Rscript $SRC/src/splitDiffBind.R \
-  $PROJECT/results/diffbind \
-  $PROJECT/results/annotatePeaks
+  $PROJECT/results/bwa/mergedLibrary/diffbind \
+  $PROJECT/results/bwa/mergedLibrary/annotatePeaks
 ```
 
-## Geneset enrichment 
+## Gene Ontology enrichment
 
-### Gene Ontology
+**Script**: `getGOenrichment.R`
 
 **Required R Packages**
 * topGO   
@@ -320,23 +320,58 @@ Rscript $SRC/src/splitDiffBind.R \
 3. output directory   
 4. extension of `.anno` files you want to query   
 5. org.eg.db from bioconductor    
-6. file containing all genes used by annotatePeaks.pl. See `makeHomerGenesDF.R`       
-7. path to `getGOenrichment.R`
+6. `*.descriptionfile` containing all genes used by `annotatePeaks.pl` (should be in `HOMER/data`)
 
 **Output**
 * `geneset_enrichment/*GO.csv` files with the enrichment results
 
 ```{bash, eval=FALSE}
 
-cd $PROJECT/run
+module purge
+module load R-bundle-CRAN/2023.12-foss-2023a
 
-sbatch $SRC/src/run_getGOenrichment.sh \
-  $SRC/src/ChIPSeqFunctions.R \
-  $PROJECT/results/annotatePeaks \
-  $PROJECT/results \
+Rscript $PROJECT/src/getGOenrichment.sh \
+  $PROJECT/src/ChIPSeqFunctions.R \
+  $PROJECT/results/bwa/mergedLibrary/annotatePeaks \
+  $PROJECT/results/bwa/mergedLibrary \
   .anno \
   org.Hs.eg.db \
-  $SRC/src/homer_genes_hg19.tsv \
-  $SRC/src/getGOenrichment.R
+  $SOFTWARE/HOMER/data/accession/arabidopsis.description 
   
+```
+
+## Known and Novel Motif enrichment
+
+Uses `meme` and `sea` to find *de novo* motifs and enrichment for known motifs.
+
+**Arguments**
+1. Directory containing the peak files
+2. Output directory
+3. File extension of the peak files ie `.narrowPeak`
+4. Path to motif database
+5. Path to the reference genome
+
+**Output**
+* `motif_enrichment/*_denovo` directory for each peak set
+  + `meme.html` - an HTML file that provides the results in an interactive, human-readable format    
+  + `meme.txt` - a plain text file of the results for backwards compatibility with earlier versions of MEME   
+  + `meme.xml` - an XML file that provides the results in a format designed for machine processing    
+  + `logoN.png,.eps` - PNG and EPS images files containing sequence logos for each of the motifs found by MEME (where N is the motif number, logo1.png is shown above)   
+* `motif_enrichment/*_known` directory for each peak set
+  + `sea.html` - an HTML file that provides the results in an interactive, human-readable format   
+  + `sea.tsv` - a TSV (tab-separated values) file that provides the results in a format suitable for parsing by scripts and viewing with Excel    
+  + `sequences.tsv` - a TSV (tab-separated values) file that lists the true- and false-positive sequences identified by SEA    
+
+```{bash, eval=F}
+cd $PROJECT/run
+
+MOTIFDB=/mnt/research/bioinformaticsCore/shared/motif_databases/JASPAR/JASPAR2018_CORE_vertebrates_non-redundant.meme
+
+# individual replicates. They take forever so I submitted servel different jobs to speed things up
+sbatch $SRC/src/findEnrichedMotifs.sh \
+  $PROJECT/results/peaks \
+  $PROJECT/results \
+  .nobl.narrowPeak \
+  $MOTIFDB \
+  $GENOME/hg19.fa.masked
 ```

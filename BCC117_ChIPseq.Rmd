@@ -367,14 +367,14 @@ cd $PROJECT/run
 
 MOTIFDB=/mnt/research/bioinformaticsCore/shared/motif_databases/20241006_MEME_motifs/motif_databases/ARABD/ArabidopsisDAPv1.meme
 
-sbatch $SRC/src/findEnrichedMotifs.sh \
+sbatch $PROJECT/src/findEnrichedMotifs.sh \
   $PROJECT/results/bwa/mergedLibrary/diffbind \
   $PROJECT/results/bwa/mergedLibrary \
   .bed \
   $MOTIFDB \
   $GENOME/arabidopsis_thaliana/ensembl_release59/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa
   
-sbatch $SRC/src/findEnrichedMotifs.sh \
+sbatch $PROJECT/src/findEnrichedMotifs.sh \
   $PROJECT/results/bwa/mergedLibrary/diffbind \
   $PROJECT/results/results/bwa/mergedLibrary/macs2/narrowPeak \
   .narrowPeak_all.bed \

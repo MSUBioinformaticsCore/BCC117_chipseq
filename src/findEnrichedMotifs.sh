@@ -5,7 +5,8 @@
 #SBATCH --time=12:00:00
 #SBATCH --nodes=1
 #SBATCH --account=bioinformaticscore
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=32
+#SBATCH --use-hwthread-cpus
 
 ################################################################## 
 # Print parameters

@@ -4,9 +4,9 @@
 #SBATCH --output=%x-%j.out
 #SBATCH --time=12:00:00
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=16
+#SBATCH --ntasks-per-node=1
 #SBATCH --account=bioinformaticscore
-#SBATCH --cpus-per-task=1
+#SBATCH -n 16
 
 ################################################################## 
 # Print parameters
@@ -70,7 +70,7 @@ done
 
 for fa in *${ext}.fa
 do
-meme $fa -nmotifs 10 -evt 0.01 -p 16 -oc ${fa%.fa}_denovo_motifs --oversubscribe
+meme $fa -nmotifs 10 -evt 0.01 -p 16 -oc ${fa%.fa}_denovo_motifs --use-hwthread-cpus
 done
 
 ################################################################## 

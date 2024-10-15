@@ -30,24 +30,24 @@ mkdir $outdir/motif_enrichment
 # bed to fasta
 ##################################################################
 
-#module purge 
-#module load BEDTools/2.31.0-GCC-12.3.0
+module purge 
+module load BEDTools/2.31.0-GCC-12.3.0
 
-#cd $indir
+cd $indir
 
-#for bed in *$ext
-#do
+for bed in *$ext
+do
 
-#bedtools getfasta -fi $genome \
-#  -bed $bed \
-#  -name \
-#  > $outdir/motif_enrichment/$bed.fa
+bedtools getfasta -fi $genome \
+  -bed $bed \
+  -name \
+  > $outdir/motif_enrichment/$bed.fa
 
-#remove duplicate sequences  
-#https://stackoverflow.com/questions/61374573/how-can-i-eliminate-duplicated-sequences-in-fasta-file  
-#awk 'BEGIN {i = 1;} { if ($1 ~ /^>/) { tmp = h[i]; h[i] = $1; } else if (!a[$1]) { s[i] = $1; a[$1] = "1"; i++; } else { h[i] = tmp; } } END { for (j = 1; j < i; j++) { print h[j]; print s[j]; } }' < $outdir/motif_enrichment/$bed.fa > $outdir/motif_enrichment/$bed.nodup.fa
+remove duplicate sequences  
+https://stackoverflow.com/questions/61374573/how-can-i-eliminate-duplicated-sequences-in-fasta-file  
+awk 'BEGIN {i = 1;} { if ($1 ~ /^>/) { tmp = h[i]; h[i] = $1; } else if (!a[$1]) { s[i] = $1; a[$1] = "1"; i++; } else { h[i] = tmp; } } END { for (j = 1; j < i; j++) { print h[j]; print s[j]; } }' < $outdir/motif_enrichment/$bed.fa > $outdir/motif_enrichment/$bed.nodup.fa
 
-#done
+done
 
 ################################################################## 
 # Look for enrichment of known motifs
@@ -58,10 +58,10 @@ module load MEME/5.5.4-gompi-2022b
 
 cd $outdir/motif_enrichment
 
-#for fa in *${ext}.nodup.fa
-#do
-#sea --p $fa --m $motif --oc ${fa%.fa}_known_motifs
-#done
+for fa in *${ext}.nodup.fa
+do
+sea --p $fa --m $motif --oc ${fa%.fa}_known_motifs
+done
 
 ################################################################## 
 # Look for de novo motifs

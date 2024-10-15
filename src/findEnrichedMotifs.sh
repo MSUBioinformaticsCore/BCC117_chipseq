@@ -6,7 +6,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=16
 #SBATCH --account=bioinformaticscore
-#SBATCH --cpus-per-task=32
+#SBATCH --cpus-per-task=1
 
 ################################################################## 
 # Print parameters

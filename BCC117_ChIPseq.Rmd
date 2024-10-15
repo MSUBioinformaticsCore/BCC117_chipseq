@@ -375,8 +375,8 @@ sbatch $PROJECT/src/findEnrichedMotifs.sh \
   $GENOME/arabidopsis_thaliana/ensembl_release59/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa
   
 sbatch $PROJECT/src/findEnrichedMotifs.sh \
-  $PROJECT/results/bwa/mergedLibrary/diffbind \
   $PROJECT/results/results/bwa/mergedLibrary/macs2/narrowPeak \
+  $PROJECT/results/bwa/mergedLibrary \
   .narrowPeak_all.bed \
   $MOTIFDB \
   $GENOME/arabidopsis_thaliana/ensembl_release59/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa

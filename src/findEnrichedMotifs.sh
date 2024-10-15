@@ -4,6 +4,7 @@
 #SBATCH --output=%x-%j.out
 #SBATCH --time=12:00:00
 #SBATCH --nodes=1
+#SBATCH --ntasks-per-node=16
 #SBATCH --account=bioinformaticscore
 #SBATCH --cpus-per-task=32
 

@@ -69,7 +69,7 @@ cd $outdir/motif_enrichment
 
 for fa in *${ext}.fa
 do
-meme $fa -nmotifs 10 -evt 0.01 -p 16 -oc ${fa%.fa}_denovo_motifs --use-hwthread-cpus
+meme $fa -nmotifs 10 -evt 0.01 -p 16 -oc ${fa%.fa}_denovo_motifs
 done
 
 ################################################################## 

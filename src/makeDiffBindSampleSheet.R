@@ -12,8 +12,17 @@
 # 
 # See `sample_sheets/DiffBind_samplesheet_consensus` for an example 
 
-bam_path = "/mnt/ufs18/rs-013/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/results/bwa/mergedLibrary"
-peak_path = "/mnt/ufs18/rs-013/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/results/bwa/mergedLibrary/macs2/narrowPeak"
+#bam_path = "/mnt/ufs18/rs-013/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/results/bwa/mergedLibrary"
+#peak_path = "/mnt/ufs18/rs-013/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/results/bwa/mergedLibrary/macs2/narrowPeak"
+
+#' @param args[1] path to bams
+#' @param args[2] path to peaks
+#' @param args[3] path to data dir
+
+args <- commandArgs(TRUE)
+
+bam_path = args[1]
+peak_path = args[2]
 
 ip = list.files(bam_path, 
                   pattern = ".+IP.+.bam$", 
@@ -41,4 +50,8 @@ sheet =
   select(SampleID, Condition, Replicate,
          bamReads, bamControl, Peaks, PeakCaller)
  
-write.csv(sheet, file = "/mnt/ufs18/rs-013/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/data/sample_sheets/DiffBind_sample_sheet.csv", row.names = F) 
+data_dir = args[3]
+sample_dir = paste0(data_dir, "/sample_sheets")
+if(!dir.exists(sample_dir)){dir.create(sample_dir)}
+
+write.csv(sheet, file = paste0(sample_dir, "/DiffBind_sample_sheet.csv"), row.names = F) 

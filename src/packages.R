@@ -1,9 +1,8 @@
 if (!require("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
 
-BiocManager::install("org.At.tair.db")
-BiocManager::install("topGO")
+bioc = c("org.At.tair.db", "topGO", "AnnotationHub", 
+         "GenomicRanges", "plyranges", "profileplyr",
+         "DiffBind")
 
-library(topGO)
-
-tidyverse
+install.packages("tidyverse")

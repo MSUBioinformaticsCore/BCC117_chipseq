@@ -8,6 +8,10 @@
 # BiocManager::install("GenomicRanges", update = FALSE)
 # BiocManager::install("plyranges", update = FALSE)
 
+#' @param args[1] outdir
+
+args <- commandArgs(TRUE)
+
 suppressMessages(library(GenomicRanges))
 suppressMessages(library(AnnotationHub))
 suppressMessages(library(tidyverse))
@@ -26,5 +30,5 @@ exclude = as.data.frame(exclude)
 exclude$seqnames = gsub("chr", "", exclude$seqnames)
 
 write.table(as.data.frame(exclude), 
-            file = "/mnt/research/bioinformaticsCore/shared/Genomes/arabidopsis_thaliana/TAIR10.Klasfeld.arabidopsis_greenscreen_20inputs.bed",
+            file = paste0(args[1], "/TAIR10.Klasfeld.arabidopsis_greenscreen_20inputs.bed"),
             sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)

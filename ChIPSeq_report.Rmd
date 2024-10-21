@@ -23,7 +23,7 @@ cat("\n")
 cat("#### Client:", params$lab, " \n")
 cat("#### Project:", params$project_name, " \n")
 cat("#### Reference Genome:", params$reference_genome, " \n")
-cat("#### [Results Folder Link](",params$data_link,") \n")
+cat("#### [Data Folder Link](",params$data_link,") \n")
 ```
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
@@ -54,27 +54,25 @@ if(!dir.exists(results.dir)){dir.create(results.dir)}
 data.dir = paste0(params$project_dir, "/data")
 if(!dir.exists(data.dir)){dir.create(data.dir)}
 
-#plot.dir = paste0(results.dir, "/report_plots")
-#if(!dir.exists(plot.dir)){dir.create(plot.dir)}
-
-plot.dir = "/mnt/scratch/hickeys6/BCC117_ChIPseq"
+plot.dir = paste0(results.dir, "/report_plots")
+if(!dir.exists(plot.dir)){dir.create(plot.dir)}
 ```
 
-# nf-core/chipseq pipeline
+## nf-core/chipseq pipeline
 
 The [nf-core/chipseq v 2.0.0 pipeline](https://nf-co.re/chipseq/2.0.0/) was used to perform raw read QC, adapter trimming, read alignment, duplicate marking, read filtering, and peak calling. See the [pipeline documentation](https://nf-co.re/chipseq/2.0.0/) for more details
 
-# Sequencing quality
+## Sequencing quality
 
-We use [FastQC v. 0.11.9](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) to assess the quailty of the squencing reads in each `.fastq`, and [MultiQC v. 1.13](https://multiqc.info/) to group the results from each file into one report. `results/multiqc_report.html` is an interactive document for exploring the QC results. See the nf-core chipseq [output file description](https://nf-co.re/chipseq/2.0.0/docs/output/) to interpret the files in the MultiQC report.
+We use [FastQC v. 0.11.9](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) to assess the quailty of the squencing reads in each `.fastq`, and [MultiQC v. 1.13](https://multiqc.info/) to group the results from each file into one report. See the nf-core chipseq [output file description](https://nf-co.re/chipseq/2.0.0/docs/output/) to interpret the files in the MultiQC report.
 
-## Raw `.fastq` files
+### Raw `.fastq` files
 
 For paired end sequencing, each sample has one `.fastq` file containing forward reads (`R1`) and one `.fastq` file containing reverse reads (`R2`) per lane (`L00N`). 
 
 See the quality report for raw reads in in the (raw) sections of the `multiqc_report.html` 
 
-## Trimmed `.fastq` files
+### Trimmed `.fastq` files
 
 We used [cutadapt v 3.4](https://cutadapt.readthedocs.io/en/stable/) to remove contaminating Illumina adaptor sequences and trim low quality bases from the ends of reads. 
 
@@ -134,18 +132,18 @@ ggsave(p,
 print(p)
 ```
 
-# Peak calling with MACS2
+## Peak calling with MACS2
 
 When analyzing ChIP-seq data, we look for areas on the genome where reads in the IP sample pile up into peaks relative to the input sample, signifying TF binding.  We used [macs2 v 2.2.7.1](https://github.com/macs3-project/MACS) to call peaks with FDR < 0.1. We use a relatively lenient FDR cutoff for each sample, because we will combine peaks from each replicate per condition in a stringent manner. See a nice MACS2 tutorial [here](https://hbctraining.github.io/Intro-to-ChIPseq/lessons/05_peak_calling_macs.html).
 
 We also remove ENCODE [exclusion list regions](https://sites.google.com/site/anshulkundaje/projects/blacklists) except for the mitochondrial reads in this case.
 
-## Results files
+### Results files
 
 These files contain information about the peaks called by MACS2 for each sample.
 ```{r, echo=FALSE}
 files = list.files(paste0(results.dir, "/bwa/mergedLibrary/macs2/narrowPeak"), pattern = ".xls", full.names = T)
-paste0("/bwa/mergedLibrary/macs2/narrowPeakmacs2/", basename(files))
+paste0("results/macs2/", basename(files))
 ```
 
 **Column descriptions**
@@ -162,7 +160,7 @@ The first 30 rows contain information about the analysis performed
  * `-LOG10(qvalue)`: -log10(q-value) at peak summit. q-value is similar to FDR    
  * `name`: the peakID   
 
-## Peak summary
+### Peak summary
 
 The following plots show the number of peaks called for each sample with $qvalue < .05$.
 
@@ -199,7 +197,7 @@ print(p)
 
 We can see how similar each sample is to the other samples using a PCA plot. Replicate samples from the same condition should cluster together. 
 
-```{r, message=FALSE, warning=FALSE, echo=FALSE, results='hide'}
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
 samples = read.csv(paste0(data.dir, "/sample_sheets/DiffBind_sample_sheet.csv"))
 samples$Peaks = files
 
@@ -223,11 +221,11 @@ dev.off()
 dba.plotPCA(dbaOb,label=DBA_REPLICATE)
 ```
 
-# Consensus peaks 
+## Consensus peaks 
 
 We used [Chip-R v1.2.0](https://www.sciencedirect.com/science/article/pii/S0888754321001531) to find reproducible peaks across replicates of the same condition. Peaks must occur in a least 2 replicates to be considered. We only consider consensus peaks when evaluating differential binding.
 
-## Consensus files
+### Consensus files
 
 These files contain information about the reproducible, or consensus, peaks identified by Chip-R for each condition.
 ```{r, echo=FALSE}
@@ -245,12 +243,12 @@ paste0("/results/bwa/mergedLibrary/macs2/narrowPeak/", basename(files))
  6. the ChIP-R p-value for peak reproducibility     
  7. the ChIP-R q-value for peak reproducibility   
 
-## Consensus peaks summary
+### Consensus peaks summary
 
 The following plot shows the number of consensus peaks called for each condition
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
-files = list.files(paste0(results.dir, "/bwa/mergedLibrary/macs2/narrowPeak"), 
+files = list.files(paste0(results.dir, "/peaks"), 
                    pattern = "_all.bed",
                    full.names=T)
 
@@ -281,7 +279,7 @@ ggsave(p, file = paste0(plot.dir, "/consensus_peak_barplot.png"))
 print(p)
 ```
 
-## Nearest gene annotation files
+### Nearest gene annotation files
 
 We used `annotatePeaks.pl` from [HOMER v4.7.2](http://homer.ucsd.edu/homer/ngs/annotation.html) to identify the nearest gene to each peak, and to find instances of the supplied motif sequence within each peak.
 
@@ -289,6 +287,22 @@ These files contain the annotation information for each peak
 ```{r, echo=FALSE}
 files = list.files(paste0(results.dir, "/bwa/mergedLibrary/annotatePeaks"), pattern = "_all.bed.anno", full.names = T)
 paste0("/results/bwa/mergedLibrary/annotatePeaks/", basename(files))
+```
+
+```{r, echo=FALSE}
+anno = lapply(files, read.delim)
+
+t_list <-
+  lapply(anno, function(df) {
+    colnames(df)[1] = "PeakID"
+    cond <- unique(df$Condition)
+    htmltools::tagList(htmltools::h4(cond),datatable(
+      df,
+      escape = F,
+      rownames = F,
+      filter = 'top')) })
+    
+htmltools::tagList(t_list)
 ```
 
 **Column descriptions**
@@ -310,35 +324,13 @@ paste0("/results/bwa/mergedLibrary/annotatePeaks/", basename(files))
 16. `Gene Name`: Nearest TSS Gene Symbol    
 17. `Gene Alias`: Nearest TSS Gene Aliases   
 18. `Gene Description`: Nearest TSS Gene description   
-19. `Gene.Type`: 'protein-coding", "ncRNA", "tRNA"   
+19. `Gene.Type`: 'protein-coding", "ncRNA", "tRNA"        
 
-```{r, echo=FALSE}
-anno = lapply(files, read.delim)
-
-cond = gsub("_all.bed.anno", "", basename(files))
-
-for (i in 1:length(anno)){
-  anno[[i]]$Condition = cond[i]
-}
-
-t_list <-
-  lapply(anno, function(df) {
-    colnames(df)[1] = "PeakID"
-    cond <- unique(df$Condition)
-    htmltools::tagList(htmltools::h3(cond),datatable(
-      df,
-      escape = F,
-      rownames = F,
-      filter = 'top')) })
-    
-htmltools::tagList(t_list)
-```
-
-## Gene ontology enrichment
+### Gene ontology enrichment
 
 We used [`topGO v2.54.0`](https://bioconductor.org/packages/release/bioc/html/topGO.html) with Fisher's exact test and the gene ontology annotations from the [`org.At.tair.db v3.18.0`](https://bioconductor.org/packages/release/data/annotation/html/org.At.tair.db.html) bioconductor annotation package to check for enrichment of genes related to specific biological processes, molecular functions, and cellular compartments among genes near ChIP peaks. Only GO terms with 5 > n genes > 200 were included. GO terms containing several hundred genes are often overly broad and, therefore, uninformative. 
 
-### Gene Ontology enrichment files 
+#### Gene Ontology enrichment files 
 
 These files contain the enrichment scores and overlapping genes for genes near peaks for each gene ontology term with at least one overlapping gene.
 ```{r, echo=FALSE}
@@ -347,18 +339,6 @@ paste0("/bwa/mergedLibrary/geneset_enrichment/", basename(files))
 ```
 
 Significantly enriched ($FDR<.05$) gene ontology terms are shown below.
-
-**Column description**
-
- * `GO.ID`: Gene ontology ID for the term   
- * `Term`: Name of the term
- * `Annotated`: The total number of genes annotated to the term  
- * `Signifcant`: The number of genes annotated to the term that also appear in the gene set of interest     
- * `Expected`: The number of genes randomly expected to overlap with the Annotated genes  
- * `pval`: The Fisher's exact test p-value for the overlap 
- * `FDR`: The Benjamini-Hochberg adjusted p-value for multiple comparisons (calculated across each ontology type listed in the `Ontology` column) 
- * `Ontology`: The ontology type that the term belongs to    
- 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
 
 go = lapply(files, read.csv, row.names=1)
@@ -372,9 +352,7 @@ for (i in 1:length(go)){
 t_list <-
   lapply(go, function(df) {
     cond <- unique(df$Condition)
-    df = df %>% filter(FDR<.05)
-    
-    htmltools::tagList(htmltools::h3(cond),datatable(
+    htmltools::tagList(htmltools::h4(cond),datatable(
       df,
       escape = F,
       rownames = F,
@@ -383,20 +361,31 @@ t_list <-
 htmltools::tagList(t_list)
 ```
 
-## Motif Enrichment
+**Column description**
 
-We used the [`meme`](https://meme-suite.org/meme/doc/meme.html?man_type=web) and [`sea`](https://meme-suite.org/meme/doc/sea.html?man_type=web) from [MEME v5.5.4](https://meme-suite.org/meme/index.html) to discover novel, de novo motifs and find enrichment for known motifs, respectively.
+ * `GO.ID`: Gene ontology ID for the term   
+ * `Term`: Name of the term
+ * `Annotated`: The total number of genes annotated to the term  
+ * `Signifcant`: The number of genes annotated to the term that also appear in the gene set of interest     
+ * `Expected`: The number of genes randomly expected to overlap with the Annotated genes  
+ * `pval`: The Fisher's exact test p-value for the overlap 
+ * `FDR`: The Benjamini-Hochberg adjusted p-value for multiple comparisons (calculated across each ontology type listed in the `Ontology` column) 
+ * `Ontology`: The ontology type that the term belongs to    
+ 
+### Motif Enrichment
 
-Known motifs came from the DAP motifs (O'Malley2016) database. These are Arabidopsis TF motifs from DNA affinity purification sequencing (DAP-seq), a high-throughput TF binding site discovery method that interrogates genomic DNA with in-vitro-expressed TFs ([O'Malley et al., Cell, 165:1280-1292, 2016](http://www.ncbi.nlm.nih.gov/pubmed/27203113)).
+We used the [`streme`](https://meme-suite.org/meme/doc/meme.html?man_type=web) and [`sea`](https://meme-suite.org/meme/doc/sea.html?man_type=web) from [MEME v5.4.1](https://meme-suite.org/meme/index.html) to discover novel, de novo motifs and find enrichment for known motifs, respectively.
+
+Known motifs came from the [JASPAR 2018](https://jaspar2018.genereg.net/) core vertebrates non-redundant database, downloaded in meme format [here](https://meme-suite.org/meme/doc/download.html).
 
 Each sample has one folder for de novo motifs and one folder for known motifs.
 
-### De novo motif discovery
+#### De novo motif discovery
 
 These are the first novel enriched motifs identified by `meme` for each condition. If a condition is not listed, no novel motifs were identified.
 
 ```{r, results="asis", echo=FALSE}
-dir_names = list.dirs(paste0(results.dir, "/bwa/mergedLibrary/motif_enrichment"))
+dir_names = list.dirs(paste0(results.dir, "/motif_enrichment"))
 dir_names = dir_names[grep("consensus",dir_names)]
 dir_names = dir_names[grep("denovo_motifs",dir_names)]
 
@@ -416,11 +405,10 @@ for(h in 1:length(file_names)){
 }
 ```
 
-
-**These folders hold the de novo motif results**
+These folders hold the de novo motif results
 ```{r, echo=FALSE}
-files = list.files(paste0(results.dir, "/bwa/mergedLibrary/motif_enrichment"), pattern = "all.bed_denovo")
-paste0("results/bwa/mergedLibrary/motif_enrichment/", files)
+files = list.files(paste0(results.dir, "/motif_enrichment"), pattern = "all.bed_denovo")
+paste0("motif_enrichment/", files)
 ```
 
 **Files in each folder**
@@ -428,22 +416,15 @@ paste0("results/bwa/mergedLibrary/motif_enrichment/", files)
  * `meme.html` - an HTML file that provides the results in an interactive, human-readable format    
  * `meme.txt` - a plain text file of the results for backwards compatibility with earlier versions of MEME   
  * `meme.xml` - an XML file that provides the results in a format designed for machine processing    
- * `logoN.png,.eps` - PNG and EPS images files containing sequence logos for each of the motifs found by MEME (where N is the motif number, logo1.png is shown above)   
-
-### Known motif enrichment
-
-The tables below show known motifs enriched in each peak set. 
-
-**Column description**
-
- * `ALT_ID`: Transcription factor   
- * `CONSENSUS`: Consensus motif   
- * `ENR_RATIO`: The relative enrichment ratio of the motif in the primary vs. control sequences.     
- * `QVALUE`: The q-value is the minimum False Discovery Rate (FDR) required to consider this motif significant.   
+ * `logoN.png,.eps` - PNG and EPS images files containing sequence logos for each of the motifs found by MEME (where N is the motif number)   
  
+#### Known motif enrichment
+
+The plots below show known motifs enriched in each peak set. If a peak set is not show, no significant enrichment (q-val < .05) was found. 
+
 ```{r, message=FALSE, warning=FALSE, echo=FALSE, fig.width=15, fig.height=5}
 
-dir_names = list.dirs(paste0(results.dir, "/bwa/mergedLibrary/motif_enrichment"))
+dir_names = list.dirs(paste0(results.dir, "/motif_enrichment"))
 dir_names = dir_names[grep("consensus",dir_names)]
 dir_names = dir_names[grep("known_motifs",dir_names)]
 file_names = lapply(dir_names, list.files, pattern = "sea.html", full.names=T)
@@ -451,42 +432,31 @@ file_names = unlist(file_names)
 file_names = gsub(".html", ".tsv", file_names)
 
 sea = lapply(file_names, read.delim, comment.char = '#')
-sea = lapply(sea, function(x){
-  y=
-    x %>%
-    filter(QVALUE < .05) %>%
-    select(ALT_ID, 
-           CONSENSUS, 
-           ENR_RATIO, 
-           QVALUE);y})
-
+sea = lapply(sea, function(x){y=filter(x, QVALUE < .05);y})
 sea_row = unlist(lapply(sea, nrow))
 sea_keep = which(sea_row > 0)
 sea = sea[sea_keep]
 
-cond = basename(dirname(file_names))
-cond = gsub(".narrowPeak_all.bed.nodup_", "", cond)
+condition = basename(dirname(file_names))
+condition = gsub(".narrowPeak.nodup_known_motifs", "", condition)
+plotfiles = paste0(plot.dir, "/", condition, "_known_motifs.png")
+plotfiles = plotfiles[sea_keep]
 
-for (i in 1:length(sea)){
-  sea[[i]]$Condition = cond[i]
-}
+if(length(sea) > 0){
 
-t_list <-
-  lapply(sea, function(df) {
-    cond <- unique(df$Condition)
-    htmltools::tagList(htmltools::h3(cond),datatable(
-      df,
-      escape = F,
-      rownames = F,
-      filter = 'top')) })
-    
-htmltools::tagList(t_list)
+  for(i in 1:length(sea)){
+    p = plotKnownMotif(sea[[i]], plotfiles[i])
+    print(p)
+    ggsave(p, file = plotfiles[i], width = 15, height = 5)
+  }
+} else {print("There are no signifcantly enriched known motifs")}
+
 ```
 
 These folders hold the known motif enrichment results
 ```{r, echo=FALSE}
-files = list.files(paste0(results.dir, "/bwa/mergedLibrary/motif_enrichment"), pattern = "all.bed_known")
-paste0("results/bwa/mergedLibrary/motif_enrichment/", files)
+files = list.files(paste0(results.dir, "/motif_enrichment"), pattern = "all.bed_known")
+paste0("motif_enrichment/", files)
 ```
 
 **Files in each folder**
@@ -495,16 +465,17 @@ paste0("results/bwa/mergedLibrary/motif_enrichment/", files)
  * `sea.tsv` - a TSV (tab-separated values) file that provides the results in a format suitable for parsing by scripts and viewing with Excel    
  * `sequences.tsv` - a TSV (tab-separated values) file that lists the true- and false-positive sequences identified by SEA    
 
-# Diffbind
+
+## Diffbind
 
 We used [DiffBind v3.8.4](https://bioconductor.org/packages/release/bioc/html/DiffBind.html) to identify peaks differentially bound between each pair of conditions. Specifically, for each pair of conditions, a union peakset was derived that includes the consensus peaks from both conditions. For each replicate of the two condtions, the reads within the union peak set are counted and normalized by the total read depth. Then, the normalized counts from each condition are compared to see if there is a significant difference (FDR < .05) in the number of reads within each peak between conditions. 
 
-## Results files
+### Results files
 
 These files contain the DiffBind results for each pair of conditions. 
 ```{r, echo=FALSE}
-files = list.files(paste0(results.dir, "/bwa/mergedLibrary/diffbind"), pattern = ".csv", full.names = T)
-paste0("/results/bwa/mergedLibrary/diffbind", basename(files))
+files = list.files(paste0(results.dir, "/diffbind"), pattern = ".csv", full.names = T)
+paste0("diffbind/", basename(files))
 ```
 
 **Column descriptions**
@@ -523,17 +494,12 @@ paste0("/results/bwa/mergedLibrary/diffbind", basename(files))
  * `Entrez.ID`: The Entrez.ID for the nearest gene TSS        
  * `Gene.Name`: The gene symbol for the nearest gene TSS    
 
-```{r, echo=FALSE}
-db = read.csv(files, row.names = 1)
-datatable(db)
-```
-
-## Differentially bound peak summary summary
+### Differentially bound peak summary summary
 
 The following plot shows the number of peaks with increased occupancy (gain) and decreased occupancy (loss) in Condition 1 relative to Condition 2.
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
-files = list.files(paste0(results.dir, "/bwa/mergedLibrary/diffbind"), 
+files = list.files(paste0(results.dir, "/diffbind"), 
                    pattern = ".csv",
                    full.names=T)
 
@@ -567,13 +533,13 @@ ggsave(p, file = paste0(plot.dir, "/diffbind_barplot.png"))
 print(p)
 ```
 
-## Volcano Plot
+### Volcano Plots
 
-Each dot in the volcano plot represents one union peak. The $log2(Condition1/Condition2)$ fold change is shown on the x-axis, and the $-log10(FDR)$ is show on the y-axis.
+Each dot in these volcano plots represents one union peak. The log2(Condition1/Condition2) fold change is shown on the x-axis, and the -log10(FDR) is show on the y-axis.
 
 ```{r, results="asis", echo=FALSE}
-file_names = list.files( "/mnt/scratch/hickeys6/BCC117_ChIPseq",
-                        pattern = "volcano_plot.png",
+file_names = list.files(paste0(results.dir, "/diffbind"),
+                        pattern = ".png",
                         full.names = T)
 
 for(h in 1:length(file_names)){
@@ -589,16 +555,16 @@ for(h in 1:length(file_names)){
 }
 ```
 
-## Profile plot
+### Overlapping peaks
 
-The following profile plot represents the binding affinity of the DNA-binding protein of interest within differentially bound peaks. 
-
-The X-axis shows the genomic position relative to the center of the peak. The color intensity of the Y-axis represent the normalized read count. A higher intensity means stronger binding or greater occupancy of that site.
+The following plots show the number of unique and shared peaks between the two DiffBind comparisons. We used [`ChIPpeakAnno v 3.32.0`](https://www.bioconductor.org/packages/devel/bioc/vignettes/ChIPpeakAnno/inst/doc/ChIPpeakAnno.html) to identify overlapping peaks.  
 
 ```{r, results="asis", echo=FALSE}
-file_names = list.files( "/mnt/scratch/hickeys6/BCC117_ChIPseq",
-                        pattern = "profile_plot.png",
+file_names = list.files(paste0(results.dir, "/overlaps"),
+                        pattern = ".png",
                         full.names = T)
+
+file_names = file_names[base::grep("DiffBind", file_names, invert = F)]
 
 for(h in 1:length(file_names)){
    image_file<-paste('\n![',
@@ -613,40 +579,37 @@ for(h in 1:length(file_names)){
 }
 ```
 
-## Nearest gene annotation files
+### Overlap files
+
+These files contain the region and peakIDs of overlapping peaks from two DiffBind comparisons.
+```{r, echo=FALSE}
+files = list.files(paste0(results.dir, "/overlaps"), pattern = ".csv", full.names = T)
+
+files = files[grep("DiffBind", files, invert = F)]
+
+paste0("overlaps/", basename(files))
+```
+
+**Column descriptions**
+
+ * `seqnames`: Peak chromosome   
+ * `start`: Peak start location   
+ * `end`: Peak end location   
+ * `width`: Peak length   
+ * `strand`: *, strand not reported   
+ * The following columns are named for the consensus peak set from each condition. `NA` means the region in that row is not a peak in that replicate. 
+ 
+Open these files in Excel and format as a table. To select peaks present in a consensus peak set, click the down arrow next to the peak set's column and uncheck `NA`. If you do this for two  consensus sets you will get peaks shared by those two columns. Filter out `NA` in all columns to see peaks shared by all peak sets.
+ 
+### Nearest gene annotation files
 
 We used `annotatePeaks.pl` from [HOMER v4.7.2](http://homer.ucsd.edu/homer/ngs/annotation.html) to identify the nearest gene to each peak, and to find instances of the supplied motif sequence within each peak.
 
-These files contain the annotation information for each peak:
+These files contain the annotation information for each peak
 ```{r, echo=FALSE}
-files = list.files(paste0(results.dir, "/bwa/mergedLibrary/annotatePeaks"), pattern = "_vs_", full.names = T)
-files = files[grep(".anno$", files)]
-files = files[!grepl(".bed", files)]
-paste0("/bwa/mergedLibrary/annotatePeaks/", basename(files))
-```
-
-```{r, echo=FALSE}
-
-anno = lapply(files, read.delim)
-
-cond = gsub(".anno", "", basename(files))
-cond = gsub("_greylisted", "", cond)
-
-for (i in 1:length(anno)){
-  anno[[i]]$Condition = cond[i]
-}
-
-t_list <-
-  lapply(anno, function(df) {
-    colnames(df)[1] = "PeakID"
-    cond <- unique(df$Condition)
-    htmltools::tagList(htmltools::h3(cond),datatable(
-      df,
-      escape = F,
-      rownames = F,
-      filter = 'top')) })
-    
-htmltools::tagList(t_list)
+files = list.files(paste0(results.dir, "/annotatePeaks"), pattern = "_vs_", full.names = T)
+files = files[grep(".anno", files)]
+paste0("annotatePeaks/", basename(files))
 ```
 
 **Column descriptions**
@@ -673,20 +636,40 @@ htmltools::tagList(t_list)
 20. `GC%`: GC contnent of peak sequences    
 21. `Motif Distance From Peak (sequence,strand,conservation)`: location of the supplied motif relative to the start of the peak.   
 
-## Gene ontology enrichment
+### Gene ontology enrichment
 
-We used [`topGO v2.54.0`](https://bioconductor.org/packages/release/bioc/html/topGO.html) with Fisher's exact test and the gene ontology annotations from the [`org.At.tair.db v3.18.0`](https://bioconductor.org/packages/release/data/annotation/html/org.At.tair.db.html) bioconductor annotation package to check for enrichment of genes related to specific biological processes, molecular functions, and cellular compartments among genes near ChIP peaks. Only GO terms with 5 > n genes > 200 were included. GO terms containing several hundred genes are often overly broad and, therefore, uninformative. 
+We used [`topGO v2.50.0`](https://bioconductor.org/packages/release/bioc/html/topGO.html) with Fisher's exact test and the gene ontoloy annotations from the [`org.Hs.eg.db v3.16.0`](https://bioconductor.org/packages/release/data/annotation/html/org.Hs.eg.db.html) bioconductor annotation package to check for enrichment of genes related to specific biological processes, molecular functions, and cellular compartments among genes near ChIP peaks. Only GO terms with 5 > n genes > 200 were included. GO terms containing several hundred genes are often overly broad and, therefore, uninformative. 
 
-### Gene Ontology enrichment files 
+The top 5 gene enriched gene ontology terms by p-value are shown below. Samples labeled "gain" or "loss" only contain peaks with a gain or loss of occupancy. Otherwise the file contains all significantly differentially bound peaks.
+```{r, message=FALSE, warning=FALSE, echo=FALSE, fig.width=15, fig.height=5}
+
+files = list.files(paste0(results.dir, "/geneset_enrichment"),
+                        pattern = "_vs_",
+                        full.names = T)
+
+files = files[grep(".csv", files)]
+
+plotfiles = gsub(".csv", ".png", files)
+  
+enrichmentList = lapply(files, read.csv)
+
+for(i in 1:length(enrichmentList)){
+  
+  p = plotGOBPenrichment(enrichmentList[[i]], files[i])
+  print(p)
+  ggsave(p, file = plotfiles[i], width = 15, height = 5) 
+    
+}
+```
+
+#### Gene Ontology enrichment files 
 
 These files contain the enrichment scores and overlapping genes for genes near peaks for each gene ontology term with at least one overlapping gene.
 ```{r, echo=FALSE}
-files = list.files(paste0(results.dir, "/bwa/mergedLibrary/geneset_enrichment"), pattern = "_vs_", full.names = T)
-
-paste0("/bwa/mergedLibrary/geneset_enrichment/", basename(files))
+files = list.files(paste0(results.dir, "/geneset_enrichment"), pattern = "_vs_", full.names = T)
+files = files[grep(".csv", files)]
+paste0("geneset_enrichment/", basename(files))
 ```
-
-Significantly enriched ($FDR<.05$) gene ontology terms are shown below.
 
 **Column description**
 
@@ -697,49 +680,86 @@ Significantly enriched ($FDR<.05$) gene ontology terms are shown below.
  * `Expected`: The number of genes randomly expected to overlap with the Annotated genes  
  * `pval`: The Fisher's exact test p-value for the overlap 
  * `FDR`: The Benjamini-Hochberg adjusted p-value for multiple comparisons (calculated across each ontology type listed in the `Ontology` column) 
- * `Ontology`: The ontology type that the term belongs to   
+ * `Ontology`: The ontology type that the term belongs to    
  
-```{r, message=FALSE, warning=FALSE, echo=FALSE}
+### Custom gene set enrichment
 
-go = lapply(files, read.csv, row.names=1)
+We used the hypergeometric test to test for enrichment of the supplied custom gene sets with genes near ChIP peaks. The plot below shows the enrichment of each peak gene set and each custom set. Samples labeled "gain" or "loss" only contain peaks with a gain or loss of occupancy. Otherwise the file contains all significantly differentially bound peaks.
 
-cond = gsub(".csv", "", basename(files))
-cond = gsub("_greylisted", "", cond)
-cond = gsub("_greylisted", "", cond)
-cond = gsub(".bed", "_all", cond)
+```{r, message=FALSE, warning=FALSE, echo=FALSE, fig.width=15, fig.height=8}
+custom = read.csv(file = paste0(results.dir, "/geneset_enrichment/custom_sets_enrichment_scores.anno.csv"))
 
-for (i in 1:length(go)){
-  go[[i]]$Condition = cond[i]
-}
+p =
+  custom %>%
+  filter(grepl("_vs_", Group1)) %>%
+  mutate(log10Pval = -log10(Pval)) %>%
+  mutate(bar_label = paste0(nSharedGenes, "/", nGroup1)) %>%
+    ggplot(aes(y = Group1, x = log10Pval)) +
+      geom_col(fill = "#D5DBDB") +
+      geom_text(aes(label = bar_label)) + 
+      geom_vline(xintercept = -log10(.05), 
+                 linetype="dashed", 
+                 show.legend = TRUE,
+                 color = "blue") +
+      xlab("-log10(Pval)") +
+      ylab("Peak annotation file") +
+      labs(caption = "bar label = genes near peaks shared with the term / total genes genes near peaks; dashed line at p-val < 0.05") +
+      theme_minimal() +
+      theme(text = element_text(size = 16)) +
+      facet_wrap(~Group2, ncol = 1)
 
-t_list <-
-  lapply(go, function(df) {
-    cond <- unique(df$Condition)
-    df = df %>% filter(FDR<.05)
-    htmltools::tagList(htmltools::h3(cond),datatable(
-      df,
-      escape = F,
-      rownames = F,
-      filter = 'top')) })
-    
-htmltools::tagList(t_list)
+p = plotCustomEnrichment(custom, '_vs_')
+print(p)
+ggsave(p, file = paste0(results.dir, "/geneset_enrichment/diffbind_custom_sets_enrichment.png"), width = 15, height = 8) 
+
 ```
 
- 
-## Motif Enrichment
+#### Custom gene set enrichment files 
 
-We used the [`meme`](https://meme-suite.org/meme/doc/meme.html?man_type=web) and [`sea`](https://meme-suite.org/meme/doc/sea.html?man_type=web) from [MEME v5.5.4](https://meme-suite.org/meme/index.html) to discover novel, de novo motifs and find enrichment for known motifs, respectively.
+This file contains the enrichment scores for genes near peaks for each custom gene set.
 
-Known motifs came from the DAP motifs (O'Malley2016) database. These are Arabidopsis TF motifs from DNA affinity purification sequencing (DAP-seq), a high-throughput TF binding site discovery method that interrogates genomic DNA with in-vitro-expressed TFs ([O'Malley et al., Cell, 165:1280-1292, 2016](http://www.ncbi.nlm.nih.gov/pubmed/27203113)).
+```{r, echo=FALSE}
+print("geneset_enrichment/custom_sets_enrichment_scores.anno.csv")
+```
+
+**Column descriptions**
+
+* `Group1`: name of the annotation file that the genes near ChIP peaks were pulled from   
+* `nGroup1`: number of genes in Group1        
+* `Group2`: name of the custom gene set   
+* `nGroup2`: number of genes in the custom gene set  
+* `nSharedGenes`: number of genes shared between Group1 and Group2
+* `Pval`: the hypergeometric test generated p-value 
+* `Enrichment`: the enrichment score. Scores > 1 suggest that more genes overlapped than expected by chance. 
+* `FDR.Group1`: The Benjamini-Hochberg adjusted p-value for multiple comparisons calculated across Group2 within each Group1 
+* `FDR.Group2`: The Benjamini-Hochberg adjusted p-value for multiple comparisons calculated across Group1 within each Group2   
+* `FDR.All`: The Benjamini-Hochberg adjusted p-value for multiple comparisons calculated across all comparisons   
+
+This file contains the genes shared between each custom gene set and genes near ChIP peaks. Each row contains a gene shared by Group1 and Group2
+```{r, echo=FALSE}
+print("geneset_enrichment/custom_sets_shared_genes.anno.csv")
+```
+
+**Column descriptions**
+
+* `Group1`: name of the annotation file that the genes near ChIP peaks were pulled from   
+* `Group2`: name of the custom gene set  
+* `SharedGene`: gene shared between Group1 and Group2
+
+### Motif Enrichment
+
+We used the [`meme`](https://meme-suite.org/meme/doc/meme.html?man_type=web) and [`sea`](https://meme-suite.org/meme/doc/sea.html?man_type=web) from [MEME v5.4.1](https://meme-suite.org/meme/index.html) to discover novel, de novo motifs and find enrichment for known motifs, respectively.
+
+Known motifs came from the [JASPAR 2018](https://jaspar2018.genereg.net/) core vertebrates non-redundant database, downloaded in meme format [here](https://meme-suite.org/meme/doc/download.html).
 
 Each sample has one folder for de novo motifs and one folder for known motifs. Folders labeled "gain" or "loss" only contain peaks with a gain or loss of occupancy. Otherwise the file contains all significantly differentially bound peaks.
 
-### De novo motif discovery
+#### De novo motif discovery
 
 These are the first novel enriched motifs identified by `meme` for each condition. If a condition is not listed, no novel motifs were identified.
 
 ```{r, results="asis", echo=FALSE}
-dir_names = list.dirs(paste0(results.dir, "/bwa/mergedLibrary/motif_enrichment"))
+dir_names = list.dirs(paste0(results.dir, "/motif_enrichment"))
 dir_names = dir_names[grep("_vs_",dir_names)]
 dir_names = dir_names[grep("denovo_motifs",dir_names)]
 
@@ -759,14 +779,11 @@ for(h in 1:length(file_names)){
 }
 ```
 
-
-
-**These folders hold the de novo motif results**
+These folders hold the de novo motif results
 ```{r, echo=FALSE}
-files = list.files(paste0(results.dir, "/bwa/mergedLibrary/motif_enrichment"), pattern = "_vs_")
+files = list.files(paste0(results.dir, "/motif_enrichment"), pattern = "_vs_")
 files = files[grep("_denovo_motifs", files)]
-files = files[!grepl("streme", files)]
-paste0("/bwa/mergedLibrary/motif_enrichment/", files)
+paste0("motif_enrichment/", files)
 ```
 
 **Files in each folder**
@@ -776,20 +793,13 @@ paste0("/bwa/mergedLibrary/motif_enrichment/", files)
  * `meme.xml` - an XML file that provides the results in a format designed for machine processing    
  * `logoN.png,.eps` - PNG and EPS images files containing sequence logos for each of the motifs found by MEME (where N is the motif number)   
  
-### Known motif enrichment
+#### Known motif enrichment
 
-The table below show known motifs enriched in each peak set. If a peak set is not show, no significant enrichment (q-val < .05) was found. 
+The plots below show known motifs enriched in each peak set. If a peak set is not show, no significant enrichment (q-val < .05) was found. 
 
-**Column description**
-
- * `ALT_ID`: Transcription factor   
- * `CONSENSUS`: Consensus motif   
- * `ENR_RATIO`: The relative enrichment ratio of the motif in the primary vs. control sequences.     
- * `QVALUE`: The q-value is the minimum False Discovery Rate (FDR) required to consider this motif significant.   
- 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE, fig.width=15, fig.height=5}
 
-dir_names = list.dirs(paste0(results.dir, "/bwa/mergedLibrary/motif_enrichment"))
+dir_names = list.dirs(paste0(results.dir, "/motif_enrichment"))
 dir_names = dir_names[grep("_vs_",dir_names)]
 dir_names = dir_names[grep("known_motifs",dir_names)]
 file_names = lapply(dir_names, list.files, pattern = "sea.html", full.names=T)
@@ -797,46 +807,32 @@ file_names = unlist(file_names)
 file_names = gsub(".html", ".tsv", file_names)
 
 sea = lapply(file_names, read.delim, comment.char = '#')
-
-sea = lapply(sea, function(x){
-  y=
-    x %>%
-    filter(QVALUE < .05) %>%
-    select(ALT_ID, 
-           CONSENSUS, 
-           ENR_RATIO, 
-           QVALUE);y})
-
+sea = lapply(sea, function(x){y=filter(x, QVALUE < .05);y})
 sea_row = unlist(lapply(sea, nrow))
 sea_keep = which(sea_row > 0)
 sea = sea[sea_keep]
 
-cond = basename(dirname(file_names))
-cond = gsub(".bed.nodup_known_motifs", "", cond)
-cond = gsub("_greylisted", "", cond)
+condition = basename(dirname(file_names))
+condition = gsub(".narrowPeak.nodup_known_motifs", "", condition)
+plotfiles = paste0(plot.dir, "/", condition, "_known_motifs.png")
+plotfiles = plotfiles[sea_keep]
 
-for (i in 1:length(sea)){
-  sea[[i]]$Condition = cond[i]
-}
+if(length(sea) > 0){
 
-t_list <-
-  lapply(sea, function(df) {
-    cond <- unique(df$Condition)
-    htmltools::tagList(htmltools::h3(cond),datatable(
-      df,
-      escape = F,
-      rownames = F,
-      filter = 'top')) })
-    
-htmltools::tagList(t_list)
+  for(i in 1:length(sea)){
+    p = plotKnownMotif(sea[[i]], plotfiles[i])
+    print(p)
+    ggsave(p, file = plotfiles[i], width = 15, height = 5)
+  }
+} else {print("There are no signifcantly enriched known motifs")}
 
 ```
 
 These folders hold the known motif enrichment results
 ```{r, echo=FALSE}
-files = list.files(paste0(results.dir, "/bwa/mergedLibrary/motif_enrichment"), pattern = "_vs_")
+files = list.files(paste0(results.dir, "/motif_enrichment"), pattern = "_vs_")
 files = files[grep("_known_motifs", files)]
-paste0("/bwa/mergedLibrary/motif_enrichment/", files)
+paste0("motif_enrichment/", files)
 ```
 
 **Files in each folder**
@@ -845,11 +841,44 @@ paste0("/bwa/mergedLibrary/motif_enrichment/", files)
  * `sea.tsv` - a TSV (tab-separated values) file that provides the results in a format suitable for parsing by scripts and viewing with Excel    
  * `sequences.tsv` - a TSV (tab-separated values) file that lists the true- and false-positive sequences identified by SEA    
 
-# Viewing tracks with IGV
+## Viewing tracks with IGV
 
 You can visually explore these data using the Broad Institute's Integrative Genomics Viewer ([IGV](https://software.broadinstitute.org/software/igv/))
 
-If you do not change the location of the files within the `results` directory, you can directly load `/results/igv/igv_session.xml`, an IGV session file with links to all off the relevant files for visalization.
+### Pileup tracks
+
+You can view read pileup tracks for each sample in IGV by loading the following files:
+```{r, echo=FALSE}
+files = list.files(paste0(results.dir, "/bigwig"), pattern = ".bw")
+paste0("bigwig/", files)
+```
+
+The `control_lambda` files correspond to the input samples. As such, each `control_lambda` of the same condition is the same, reguardless of replicate number. You can load one of these files per condition.
+
+### MACS2 Peak tracks
+
+You can view the locations of the peaks called by MACS2 individual replicates by loading these files:
+```{r,echo=FALSE}
+files = list.files(paste0(results.dir, "/peaks"), pattern = "nobl.narrowPeak")
+paste0("peaks/", files)
+```
+
+### Consensus Peak tracks
+
+You can view the locations of the consensus peaks called by ChIP-R by loading these files:
+```{r, echo=FALSE}
+files = list.files(paste0(results.dir, "/peaks"), pattern = "_all.bed")
+paste0("peaks/", files)
+```
+
+### DiffBind Peak tracks
+
+You can view the locations of differentially bound peaks called by DiffBind by loading these files:
+
+```{r, echo=FALSE}
+files = list.files(paste0(results.dir, "/diffbind"), pattern = "bed")
+paste0("diffbind/", files)
+```
 
 
 

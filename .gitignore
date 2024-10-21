@@ -6,3 +6,4 @@
 data/fastq
 results
 run 
+*.html

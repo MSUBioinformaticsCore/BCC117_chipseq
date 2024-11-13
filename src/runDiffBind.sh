@@ -1,4 +1,4 @@
-#!/bin/bash -login
+#!/bin/bash --login
 #SBATCH --mem=256GB
 #SBATCH --job-name=DiffBind
 #SBATCH --output=%x-%j.out

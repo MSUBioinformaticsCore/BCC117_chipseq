@@ -1,6 +1,5 @@
 #' @param args[1] path to sample sheet
 #' @param args[2] path to results dir
-#' @param args[3] use grey list T/F
 #' https://bioconductor.org/packages/release/bioc/vignettes/DiffBind/inst/doc/DiffBind.pdf
 
 args <- commandArgs(TRUE)
@@ -62,6 +61,7 @@ samples = read.csv(args[1])
 
 conditions = unique(samples$Condition)
 comparisons = combn(conditions, 2, simplify = FALSE)
+
 # comparisons = lapply(comparisons, function(x) {x[order(x)]})
 
 # make DBA object -------------------------------------------------

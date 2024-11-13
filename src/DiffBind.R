@@ -1,6 +1,5 @@
 #' @param args[1] path to sample sheet
 #' @param args[2] path to results dir
-#' @param args[3] baseline condition
 #' https://bioconductor.org/packages/release/bioc/vignettes/DiffBind/inst/doc/DiffBind.pdf
 
 args <- commandArgs(TRUE)
@@ -49,23 +48,21 @@ library(parallel)
 # set up ------------------------------------------------------------------
 
 results.dir = args[2]
-# results.dir = "/mnt/research/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/results/bwa/merged_library"
+# results.dir = "/mnt/ufs18/rs-013/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/results/bwa/mergedLibrary"
 diffbind.dir = paste0(results.dir, "/diffbind")
 if(!dir.exists(diffbind.dir)){dir.create(diffbind.dir)}
 
-baseline_condition = args[3]
-# baseline_condition = "warm"
-
 # Load sample sheet  -------------------------------------------------------
 
-# samples = read.csv("/mnt/research/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/data/sample_sheets/DiffBind_sample_sheet_consensus.csv")
+# samples = read.csv("/mnt/ufs18/rs-013/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/data/sample_sheets/DiffBind_sample_sheet.csv")
 samples = read.csv(args[1])
 
 # list the pairwise comparisons -----------------------------------
 
 conditions = unique(samples$Condition)
 comparisons = combn(conditions, 2, simplify = FALSE)
-comparisons = lapply(comparisons, function(x) {x[order(x)]})
+
+# comparisons = lapply(comparisons, function(x) {x[order(x)]})
 
 # make DBA object -------------------------------------------------
 
@@ -78,20 +75,20 @@ dbaOb <- dba.normalize(dbaOb)
 
 # model design ------------------------------------------------------------
 
-dbaOb = dba.contrast(dbaOb, reorderMeta=list(Condition=baseline_condition))
+dbaOb = dba.contrast(dbaOb)
 
 # Differential binding ----------------------------------------------------
 
-dbaOb <- dba.analyze(dbaOb, bGreylist=FALSE, bBlacklist=FALSE)
+dbaOb <- dba.analyze(dbaOb, bGreylist=TRUE, bBlacklist=FALSE)
 
 
 #if(as.logical(args[3])){
   
   # print(paste0("use greylist =", args[3]))
   
-  # dbaOb <- dba.analyze(dbaOb, bGreylist=TRUE, bBlacklist=FALSE)
-  # 
-  # file_tag="_greylisted"
+  dbaOb <- dba.analyze(dbaOb, bGreylist=TRUE, bBlacklist=FALSE)
+  
+  file_tag="_greylisted"
   
 # } else {
 #   
@@ -105,11 +102,11 @@ dbaOb <- dba.analyze(dbaOb, bGreylist=FALSE, bBlacklist=FALSE)
 
 # save DBA ----------------------------------------------------------------
 
-save(dbaOb, file = paste0(diffbind.dir, "/DBA.Rdata"))
+save(dbaOb, file = paste0(diffbind.dir, "/DBA", file_tag, ".Rdata"))
 
 # output results ----------------------------------------------------------
 
- for (i in 1:length(dbaOb$contrasts)) {
+for (i in 1:length(dbaOb$contrasts)) {
   
   group1 = dbaOb$contrasts[[i]]$name1
   group2 = dbaOb$contrasts[[i]]$name2
@@ -163,7 +160,7 @@ save(dbaOb, file = paste0(diffbind.dir, "/DBA.Rdata"))
   print(paste0(diffbind.dir, 
                "/", group1, "_vs_", group2,
                file_tag, ".bed saved"))
- }
+}
 
 # volcano plots -----------------------------------------------------------
 

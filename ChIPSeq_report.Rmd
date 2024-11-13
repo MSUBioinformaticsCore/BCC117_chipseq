@@ -198,8 +198,7 @@ print(p)
 We can see how similar each sample is to the other samples using a PCA plot. Replicate samples from the same condition should cluster together. 
 
 ```{r, message=FALSE, warning=FALSE, echo=FALSE}
-samples = read.csv(paste0(data.dir, "/sample_sheets/DiffBind_sample_sheet.csv"))
-samples$Peaks = files
+samples = read.csv(paste0(data.dir, "/sample_sheets/DiffBind_sample_sheet_narrowPeak.csv"))
 
 if(file.exists(paste0(plot.dir, "/replicateDBA.Rdata"))){
   

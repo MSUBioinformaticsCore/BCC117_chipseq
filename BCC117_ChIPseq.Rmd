@@ -241,8 +241,8 @@ module load R-bundle-CRAN/2023.12-foss-2023a
 
 # specific for this project
 Rscript $PROJECT/src/makeDiffBindSampleSheet.R \
-  $PROJECT/results/bwa/mergedLibrary \
-  $PROJECT/results/bwa/mergedLibrary/macs3/narrow_peak \
+  $PROJECT/results/bwa/merged_library \
+  $PROJECT/results/bwa/merged_library/macs3/narrow_peak \
   $PROJECT/data
 
 ```
@@ -276,9 +276,9 @@ From the Diffbind tutorial:
 cd $PROJECT/run
 
 sbatch $PROJECT/src/runDiffBind.sh \
-  $PROJECT/data/sample_sheets/DiffBind_samplesheet.csv \
-  $PROJECT/results \ 
-  TRUE \
+  $PROJECT/data/sample_sheets/DiffBind_sample_sheet_consensus.csv \
+  $PROJECT/results \
+  "warm" \
   $PROJECT/src/DiffBind.R
 
 ```

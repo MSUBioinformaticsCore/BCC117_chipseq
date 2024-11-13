@@ -14,7 +14,8 @@
 start=`date +%s`
 echo "sample sheet:" $1
 echo "results dir:" $2
-echo "DiffBind.R path:" $3
+echo "baseline condition:" $3
+echo "DiffBind.R path:" $4
 
 ################################################################## 
 # Run DiffBind.R
@@ -23,7 +24,7 @@ echo "DiffBind.R path:" $3
 module purge
 module load R-bundle-CRAN/2023.12-foss-2023a
 
-Rscript $3 $1 $2
+Rscript $4 $1 $2 $3
 
 ################################################################## 
 # Finish

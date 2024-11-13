@@ -12,12 +12,14 @@
 # 
 # See `sample_sheets/DiffBind_samplesheet_consensus` for an example 
 
-#bam_path = "/mnt/ufs18/rs-013/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/results/bwa/mergedLibrary"
-#peak_path = "/mnt/ufs18/rs-013/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/results/bwa/mergedLibrary/macs2/narrowPeak"
+#bam_path = "/mnt/research/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/results/bwa/merged_library"
+#peak_path = "/mnt/research/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/results/bwa/mergedLibrary/macs3/narrow_peak"
 
 #' @param args[1] path to bams
 #' @param args[2] path to peaks
 #' @param args[3] path to data dir
+
+library(tidyverse)
 
 args <- commandArgs(TRUE)
 

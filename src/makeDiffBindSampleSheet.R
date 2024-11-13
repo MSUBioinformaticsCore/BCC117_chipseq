@@ -30,13 +30,19 @@ ip = list.files(bam_path,
                   pattern = ".+IP.+.bam$", 
                   full.names = T)
 
+ip
+
 input = list.files(bam_path, 
                 pattern = ".+input.+.bam$", 
                 full.names = T)
 
+input
+
 consensus = list.files(peak_path, 
                        pattern = "_all.bed", 
                        full.names = T)
+
+consensus 
 
 sheet = data.frame(bamReads = ip,
                    bamControl = input,

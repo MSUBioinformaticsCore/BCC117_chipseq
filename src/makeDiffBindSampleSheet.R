@@ -46,12 +46,39 @@ sheet =
   mutate(SampleID=gsub(".mLb.clN.sorted.bam", 
                        "", basename(bamReads)),
          Condition = gsub("_.*", "", SampleID),
-         Replicate = gsub(".*_IP", "", SampleID)) %>%
+         Replicate = gsub(".*_REP", "", SampleID)) %>%
   select(SampleID, Condition, Replicate,
-         bamReads, bamControl, Peaks, PeakCaller)
- 
+         bamReads, bamControl, Peaks, PeakCaller) %>%
+  filter(SampleID != "cold_IP_REP3")
+
+sheet$SampleID = gsub("warm_IP_REP3", "warm_IP_REP4", sheet$SampleID)
+sheet$Replicate = gsub(".*_REP", "", sheet$SampleID)
+
 data_dir = args[3]
 sample_dir = paste0(data_dir, "/sample_sheets")
 if(!dir.exists(sample_dir)){dir.create(sample_dir)}
 
-write.csv(sheet, file = paste0(sample_dir, "/DiffBind_sample_sheet.csv"), row.names = F) 
+write.csv(sheet, file = paste0(sample_dir, "/DiffBind_sample_sheet_consensus.csv"), row.names = F) 
+
+narrow_peak = list.files(peak_path, 
+                         pattern = ".narrowPeak$", 
+                         full.names = T)
+
+sheet = data.frame(bamReads = ip,
+                   bamControl = input,
+                   Peaks = narrow_peak,
+                   PeakCaller = "bed")
+sheet = 
+  sheet %>%
+  mutate(SampleID=gsub(".mLb.clN.sorted.bam", 
+                       "", basename(bamReads)),
+         Condition = gsub("_.*", "", SampleID),
+         Replicate = gsub(".*_REP", "", SampleID)) %>%
+  select(SampleID, Condition, Replicate,
+         bamReads, bamControl, Peaks, PeakCaller) %>%
+  filter(SampleID != "cold_IP_REP3")
+
+sheet$SampleID = gsub("warm_IP_REP3", "warm_IP_REP4", sheet$SampleID)
+sheet$Replicate = gsub(".*_REP", "", sheet$SampleID)
+
+write.csv(sheet, file = paste0(sample_dir, "/DiffBind_sample_sheet_narrowPeak.csv"), row.names = F) 

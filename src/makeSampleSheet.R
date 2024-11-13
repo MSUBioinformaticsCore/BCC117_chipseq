@@ -4,7 +4,7 @@
 # make sample sheet for nfcore-chipseq
 library(tidyverse)
 
-#data_dir = "/mnt/research/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/data"
+#data_dir = "/mnt/research/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/data/fastq"
 data_dir = args[1]
 ab = args[2]
 
@@ -21,18 +21,27 @@ samp = data.frame(fastq_1 = R1,
 
 samp$sample = gsub("_S.*", "", basename(samp$fastq_1))
 
+# replicates have to be sequential so rep 3 is actually rep 4
 samp = 
   samp %>%
+  filter(sample  != "warm_input3") %>%
   mutate(control = case_when(
     grepl("IP", sample) ~ gsub("IP", "input", sample),
     grepl("input", sample) ~ "")) %>%
   mutate(antibody = case_when(
     grepl("IP", sample) ~ ab,
     grepl("input", sample) ~ "")) %>%
-  select(sample, fastq_1, fastq_2, antibody, control) %>%
-  filter(sample != "warm_input3")
+  mutate(replicate = c(rep(c(1,2,3,4), 2), rep(c(1,2,3), 2)),
+         control_replicate = case_when(
+           grepl("input", sample) ~ "",
+           grepl("IP", sample) ~ as.character(replicate))) %>%
+  select(sample, fastq_1, fastq_2, replicate,
+         antibody, control, control_replicate)
 
-sample_dir = paste0(data_dir, "/sample_sheets")
+samp$sample = str_sub(samp$sample, start = 1, end = nchar(samp$sample)-1)
+samp$control = str_sub(samp$control, start = 1, end = nchar(samp$control)-1)
+
+sample_dir = paste0(dirname(data_dir), "/sample_sheets")
 if(!dir.exists(sample_dir)){dir.create(sample_dir)}
 
 write.table(samp, file = paste0(sample_dir, "/sample_sheet.csv"), 

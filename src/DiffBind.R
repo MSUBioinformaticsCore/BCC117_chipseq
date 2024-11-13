@@ -82,23 +82,23 @@ dbaOb = dba.contrast(dbaOb)
 dbaOb <- dba.analyze(dbaOb, bGreylist=TRUE, bBlacklist=FALSE)
 
 
-if(args[3]){
+#if(as.logical(args[3])){
   
-  print(paste0("use greylist =", args[3]))
+  # print(paste0("use greylist =", args[3]))
   
   dbaOb <- dba.analyze(dbaOb, bGreylist=TRUE, bBlacklist=FALSE)
   
   file_tag="_greylisted"
   
-} else {
-  
-  print(paste0("use greylist =", args[3]))
-  
-  dbaOb <- dba.analyze(dbaOb, bGreylist=FALSE, bBlacklist=FALSE)
-  
-  file_tag=""
-  
-}
+# } else {
+#   
+#   print(paste0("use greylist =", args[3]))
+#   
+#   dbaOb <- dba.analyze(dbaOb, bGreylist=FALSE, bBlacklist=FALSE)
+#   
+#   file_tag=""
+#   
+# }
 
 # save DBA ----------------------------------------------------------------
 

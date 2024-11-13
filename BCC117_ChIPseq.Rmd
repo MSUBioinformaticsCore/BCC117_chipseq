@@ -41,16 +41,19 @@ mkdir $SCRATCH/thomashowm/BCC117_chipseq
 ### Download reference genome and annotation
 ```{bash, eval=FALSE}
 mkdir $GENOME/arabidopsis_thaliana
-mkdir $GENOME/arabidopsis_thaliana/ensembl_release59
-cd $GENOME/arabidopsis_thaliana/ensembl_release59
+mkdir $GENOME/arabidopsis_thaliana/ensembl_release60
+cd $GENOME/arabidopsis_thaliana/ensembl_release60
 
-wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/arabidopsis_thaliana/dna/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa.gz 
+wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-60/fasta/arabidopsis_thaliana/dna/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa.gz 
 
-wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/gff3/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.59.gff3.gz
+wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-60/gff3/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.60.gff3.gz
 
-mv $GENOME/arabidopsis_thaliana/ensembl_release59/Arabidopsis_thaliana.TAIR10.59.gff3.gz $GENOME/arabidopsis_thaliana/ensembl_release59/Arabidopsis_thaliana.TAIR10.59.gff.gz 
+mv $GENOME/arabidopsis_thaliana/ensembl_release60/Arabidopsis_thaliana.TAIR10.60.gff3.gz $GENOME/arabidopsis_thaliana/ensembl_release60/Arabidopsis_thaliana.TAIR10.60.gff.gz 
 
-gunzip $GENOME/arabidopsis_thaliana/ensembl_release59/Arabidopsis_thaliana.TAIR10.59.gff.gz
+gunzip $GENOME/arabidopsis_thaliana/ensembl_release60/Arabidopsis_thaliana.TAIR10.60.gff.gz
+
+module load cufflinks/2.2.1-linux-x86_64
+gffread Arabidopsis_thaliana.TAIR10.60.gff -T -o Arabidopsis_thaliana.TAIR10.60.gtf
 ```
 
 ### Install R packages
@@ -75,7 +78,7 @@ Rscript $PROJECT/src/packages.R
  
 ### Download exclusion regions
 
-The exclusion lists identify areas of the genome that have low mappability rates or contain high artifactual signals. Reads mapping to these regions should be masked out before applying ChIP-seq peak-calling software such as MACS2. `getExclusionList.R` uses `excluderanges v 0.99.8` to download the exclusion list for TAIR10 defined by the [Greenscreen](https://academic.oup.com/plcell/article/34/12/4795/6705244) pipeline.
+The exclusion lists identify areas of the genome that have low mappability rates or contain high artifactual signals. Reads mapping to these regions should be masked out before applying ChIP-seq peak-calling software such as MACS2. `getExclusionList.R` uses `excluderanges v 0.99.8` to download the exclusion list for TAIR10 defined by the [Greenscreen](https://academic.oup.com/plcell/article/34/12/4795/6705244) pipeline. Adds Mt and Pt chromosomes to blacklist.
 
 **Script**: `getExclusionList.R`
 
@@ -88,6 +91,12 @@ The exclusion lists identify areas of the genome that have low mappability rates
 `TAIR10.Klasfeld.arabidopsis_greenscreen_20inputs.bed` 
 
 ```{bash, eval=FALSE}
+# find Pt and Mt sizes
+cd $GENOME/arabidopsis_thaliana/ensembl_release60
+
+gunzip -c Arabidopsis_thaliana.TAIR10.dna.toplevel.fa.gz > Arabidopsis_thaliana.TAIR10.dna.toplevel.fa
+cut -f1,2 Arabidopsis_thaliana.TAIR10.dna.toplevel.fa.fai > sizes.genome
+
 module purge
 module load R-bundle-CRAN/2023.12-foss-2023a
 
@@ -97,7 +106,7 @@ Rscript $PROJECT/src/getExclusionList.R \
 
 ### Make nf-core sample sheet
 
-Sample sheet to specify the input to the nf-core/chipseq pipeline. See [here](https://nf-co.re/chipseq/2.0.0/docs/usage/) for more details. Script works for one antibody. Excludes `warm_input3`. 
+Sample sheet to specify the input to the nf-core/chipseq pipeline. See [here](https://nf-co.re/chipseq/2.0.0/docs/usage/) for more details. Script works for one antibody. Excludes `warm_input3`, `cold_IP3`, and `cold_input3`. 
 
 **Script**: `makeSampleSheet.R` specific for this analysis   
 
@@ -155,7 +164,7 @@ Download the most recent nf-core singularity container if you haven't already
 cd $PIPES/nfcore_chipseq
 
 nf-core download chipseq \
-  -r 2.0.0 \
+  -r 2.1.0 \
   -x none \
   -s singularity 
 ```
@@ -163,12 +172,12 @@ nf-core download chipseq \
 ## Run the nf-core chipseq pipeline
 
 ```{bash}
-nextflow run $PIPES/nfcore_chipseq/nf-core-chipseq_2.0.0/2_0_0 \
+nextflow run $PIPES/nfcore_chipseq/nf-core-chipseq_2.1.0/2_1_0 \
   --input $PROJECT/data/sample_sheets/sample_sheet.csv \
   --outdir $PROJECT/results \
-  --fasta $GENOME/arabidopsis_thaliana/ensembl_release59/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa \
-  --gff $GENOME/arabidopsis_thaliana/ensembl_release59/Arabidopsis_thaliana.TAIR10.59.gff \
-  --blacklist $GENOME/arabidopsis_thaliana/TAIR10.Klasfeld.arabidopsis_greenscreen_20inputs.bed \
+  --fasta $GENOME/arabidopsis_thaliana/ensembl_release60/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa \
+  --gtf $GENOME/arabidopsis_thaliana/ensembl_release60/Arabidopsis_thaliana.TAIR10.60.gtf \
+  --blacklist $GENOME/arabidopsis_thaliana/ensembl_release60/TAIR10.Klasfeld.arabidopsis_greenscreen_20inputs_MtPt.bed \
   --narrow_peak \
   --read_length 150 \
   -profile singularity \
@@ -185,7 +194,7 @@ conda install chip-r
 
 Run Chip-R
 ```{bash}
-cd $PROJECT/results/bwa/mergedLibrary/macs2/narrowPeak
+cd $PROJECT/results/bwa/merged_library/macs3/narrow_peak
 
 for g in cold warm
 do 
@@ -233,7 +242,7 @@ module load R-bundle-CRAN/2023.12-foss-2023a
 # specific for this project
 Rscript $PROJECT/src/makeDiffBindSampleSheet.R \
   $PROJECT/results/bwa/mergedLibrary \
-  $PROJECT/results/bwa/mergedLibrary/macs2/narrowPeak \
+  $PROJECT/results/bwa/mergedLibrary/macs3/narrow_peak \
   $PROJECT/data
 
 ```
@@ -267,7 +276,7 @@ From the Diffbind tutorial:
 cd $PROJECT/run
 
 sbatch $PROJECT/src/runDiffBind.sh \
-  $PROJECT/data/DiffBind_samplesheet_consensus.csv \
+  $PROJECT/data/sample_sheets/DiffBind_samplesheet.csv \
   $PROJECT/results \ 
   TRUE \
   $PROJECT/src/DiffBind.R

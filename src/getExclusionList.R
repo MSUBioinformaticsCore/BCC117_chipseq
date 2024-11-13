@@ -29,6 +29,15 @@ exclude <-
 exclude = as.data.frame(exclude)
 exclude$seqnames = gsub("chr", "", exclude$seqnames)
 
+mt_pt = data.frame(seqnames = c("Mt", "Pt"),
+                   start = c(1,1),
+                   end = c(366924, 154478),
+                   width = c(366924, 154478),
+                   strand = c("*", "*"),
+                   name = c("Mitochondria", "Chloroplast"))
+
+exclude = rbind(exclude, mt_pt)
+
 write.table(as.data.frame(exclude), 
-            file = paste0(args[1], "/TAIR10.Klasfeld.arabidopsis_greenscreen_20inputs.bed"),
+            file = paste0(args[1], "/TAIR10.Klasfeld.arabidopsis_greenscreen_20inputs_MtPt.bed"),
             sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)

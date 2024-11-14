@@ -15,6 +15,7 @@ echo "outdir:" $2
 echo "extension:" $3
 echo "genome:" $4
 echo "motif file:" $5
+echo "gtf:" $6
 
 ################################################################## 
 # Set up
@@ -26,6 +27,7 @@ outdir=$2
 ext=$3
 genome=$4
 motif=$5
+gtf=$6
 
 ################################################################## 
 # annotate peaks
@@ -48,6 +50,7 @@ do
     $genome \
     -m $motif \
     -annStats ${outdir}/${bed}.annStats \
+    -gtf $gtf \
     > ${outdir}/${bed}.anno
     
   else
@@ -55,6 +58,7 @@ do
    annotatePeaks.pl ${bed}.homer \
     $genome \
     -annStats ${outdir}/${bed}.annStats \
+    -gtf $gtf
     > ${outdir}/${bed}.anno
     
   fi

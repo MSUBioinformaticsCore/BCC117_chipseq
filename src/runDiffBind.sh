@@ -6,6 +6,7 @@
 #SBATCH --nodes=1
 #SBATCH --account=bioinformaticscore
 #SBATCH --cpus-per-task=16
+#SBATCH --constrain=intel18
 
 ################################################################## 
 # Print parameters

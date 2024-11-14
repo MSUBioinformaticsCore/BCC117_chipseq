@@ -320,8 +320,9 @@ perl /mnt/research/bioinformaticsCore/software/HOMER/configureHomer.pl -install 
   1. Path to the directory containing peak files in bed format   
   2. Path to output directory     
   3. Pattern in the file names you want to annotate   
-  4. The genome/annotation package for your genome of interest    
+  4. The genome/annotation package for your genome of interest
   5. Homer motif file if you have one   
+  6. The gft file you want the annotations to come from     
 
 ```{bash,eval=FALSE}
 cd $PROJECT/run
@@ -332,7 +333,8 @@ sbatch $PROJECT/src/annotatePeaks.sh \
   $PROJECT/results/bwa/mergedLibrary/annotatePeaks \
   _all.bed \
   tair10 \
-  NONE
+  NONE \
+  $GENOME/arabidopsis_thaliana/ensembl_release60/Arabidopsis_thaliana.TAIR10.60.gtf 
   
 # diff peaks
 sbatch $PROJECT/src/annotatePeaks.sh \
@@ -340,7 +342,8 @@ sbatch $PROJECT/src/annotatePeaks.sh \
   $PROJECT/results/bwa/mergedLibrary/annotatePeaks \
   .bed \
   tair10 \
-  NONE 
+  NONE \
+  $GENOME/arabidopsis_thaliana/ensembl_release60/Arabidopsis_thaliana.TAIR10.60.gtf
 
 ```
 

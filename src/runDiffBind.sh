@@ -1,8 +1,8 @@
 #!/bin/bash --login
-#SBATCH --mem=256GB
+#SBATCH --mem=100GB
 #SBATCH --job-name=DiffBind
 #SBATCH --output=%x-%j.out
-#SBATCH --time=24:00:00
+#SBATCH --time=4:00:00
 #SBATCH --nodes=1
 #SBATCH --account=bioinformaticscore
 #SBATCH --cpus-per-task=16

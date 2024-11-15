@@ -58,7 +58,7 @@ do
    annotatePeaks.pl ${bed}.homer \
     $genome \
     -annStats ${outdir}/${bed}.annStats \
-    -gtf $gtf
+    -gtf $gtf \
     > ${outdir}/${bed}.anno
     
   fi

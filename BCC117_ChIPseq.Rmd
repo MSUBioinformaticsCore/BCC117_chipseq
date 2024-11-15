@@ -223,7 +223,7 @@ Make a `.csv` file with the following columns:
 5. `Peaks`: path to the consensus peak `.bed` files
 6. `PeakCaller`: bed
 
-**Script**: `makeDiffBindSampleSheet.R`, specfic to this project   
+**Script**: `makeDiffBindSampleSheet.R`, specific to this project   
 
 **Arguments** 
 
@@ -247,22 +247,61 @@ Rscript $PROJECT/src/makeDiffBindSampleSheet.R \
 
 ```
 
-### Greylists
+### Make a custom Greylist
 
 From the Diffbind tutorial:
 
-> Greylists are specific to a ChIP-seq experiment, and are derived from the controls generated as part of the experiment[4]. The idea is to analyze libraries that are not meant to show systematic enrichment (such as Inputs, in which no anti-body is introduced), and identify anomalous regions where a disproportionate degree of signal is present. These regions can then be excluded from subsequent analysis.
+> Greylists are specific to a ChIP-seq experiment, and are derived from the controls generated as part of the experiment. The idea is to analyze libraries that are not meant to show systematic enrichment (such as Inputs, in which no anti-body is introduced), and identify anomalous regions where a disproportionate degree of signal is present. These regions can then be excluded from subsequent analysis.
 >  Application of greylists prevents identification of problematic genomic regions in the materials used in the experiment as being differentially bound. For example, these could include areas of high copy-number alterations in a cell line.
 >  Prior to version 3.0, the default in DiffBind has been to simply subtract control reads from ChIP reads in order to dampen the magnitude of enrichment in anomalous regions. Greylists represent a more principled way of accomplishing this. If a greylist has been applied, the current default in DiffBind is to not subtract control reads.
+
+#### Get chromosome size file
+
+```{bash}
+module purge
+module load SAMtools/1.19.2-GCC-13.2.0
+
+fasta=$GENOME/arabidopsis_thaliana/ensembl_release60/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa
+
+samtools faidx $fasta
+
+cut -f1,2 ${fasta}.fai > $GENOME/arabidopsis_thaliana/ensembl_release60/sizes.genome
+```
+
+### Make greylist
+
+**Script:** `run_customGreylist.sh`
+
+**Arguments**
+
+1. Path to the DiffBind sample sheet 
+2. Path to the sizes.genome file (tab-delimited file with chromosome sizes)   
+3. Output directory for the results   
+4. Path to customGreylist.R 
+
+**Output**
+
+`greylist.Rds`: An RDS file containing the greylist information.
+
+```{bash}
+cd $PROJECT/run
+
+sbatch $PROJECT/src/run_customGreylist.sh \
+  $PROJECT/data/sample_sheets/DiffBind_sample_sheet_consensus.csv \
+  $GENOME/arabidopsis_thaliana/ensembl_release60/sizes.genome \
+  $PROJECT/results/bwa/merged_library \
+  $PROJECT/src/customGreylist.R 
+```
 
 ### Run `runDiffBind.sh`
 
 **Arguments**
 
-1. Path to sample sheet   
-2. Path to results dir    
-3. Whether to use a greylist TRUE/FALSE     
-4. Path to `DiffBind.R`   
+1. Path to the DiffBind sample sheet    
+2. Output directory for the results    
+3. Baseline condition   
+4. Path to `greylist.Rds`   
+5. Path to `DiffBind.R`   
 
 **Output**
 

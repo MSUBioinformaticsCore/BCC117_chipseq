@@ -1,6 +1,7 @@
 #' @param args[1] path to sample sheet
 #' @param args[2] path to results dir
 #' @param args[3] baseline condition
+#' @param args[4] greylist 
 #' https://bioconductor.org/packages/release/bioc/vignettes/DiffBind/inst/doc/DiffBind.pdf
 
 args <- commandArgs(TRUE)
@@ -56,6 +57,8 @@ if(!dir.exists(diffbind.dir)){dir.create(diffbind.dir)}
 baseline_condition = args[3]
 # baseline_condition = "warm"
 
+greylist = readRDS(args[4])
+
 # Load sample sheet  -------------------------------------------------------
 
 # samples = read.csv("/mnt/research/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/data/sample_sheets/DiffBind_sample_sheet_consensus.csv")
@@ -76,7 +79,7 @@ dbaOb = dba.contrast(dbaOb, reorderMeta=list(Condition=baseline_condition))
 
 # Differential binding ----------------------------------------------------
 
-dbaOb <- dba.analyze(dbaOb, bGreylist=FALSE, bBlacklist=FALSE)
+dbaOb <- dba.analyze(dbaOb, bGreylist=greylist, bBlacklist=FALSE)
 
 # save DBA ----------------------------------------------------------------
 

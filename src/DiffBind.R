@@ -6,7 +6,7 @@
 
 args <- commandArgs(TRUE)
 
-# install -----------------------------------------------------------------
+# install ----------------------------------------------------------------------
 
 installed = installed.packages()[,"Package"]
 
@@ -45,43 +45,36 @@ if(!"tidyverse" %in% installed) {
 
 library(DiffBind)
 library(tidyverse)
-library(parallel)
 
-# set up ------------------------------------------------------------------
+# set up -----------------------------------------------------------------------
 
 results.dir = args[2]
 # results.dir = "/mnt/research/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/results/bwa/merged_library"
+
 diffbind.dir = paste0(results.dir, "/diffbind")
 if(!dir.exists(diffbind.dir)){dir.create(diffbind.dir)}
 
 baseline_condition = args[3]
 # baseline_condition = "warm"
 
-greylist = readRDS(args[4])
+# Load sample sheet and greylist -----------------------------------------------
 
-# Load sample sheet  -------------------------------------------------------
+# sample_sheet = read.csv("/mnt/research/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/data/sample_sheets/DiffBind_sample_sheet_consensus.csv")
+sample_sheet = read.csv(args[1])
 
-# samples = read.csv("/mnt/research/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/data/sample_sheets/DiffBind_sample_sheet_consensus.csv")
-samples = read.csv(args[1])
+# custom_greylist = readRDS("/mnt/research/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/results/bwa/merged_library/greylist.Rds")
+custom_greylist = readRDS(args[4])
 
-# make DBA object -------------------------------------------------
+# analyse ----------------------------------------------------------------------
 
-dbaOb = dba(sampleSheet= samples, bRemoveM=FALSE)
+dbaOb = dba(sampleSheet= sample_sheet, bRemoveM=FALSE) %>%
+  dba.blacklist(blacklist = FALSE, greylist=custom_greylist$master) %>%
+  dba.count() %>%
+  dba.normalize() %>%
+  dba.contrast(reorderMeta=list(Condition=baseline_condition)) %>%
+  dba.analyze(bBlacklist = FALSE, bGreylist = FALSE)
 
-# count and normalize ----------------------------------------
-
-dbaOb <- dba.count(dbaOb)
-dbaOb <- dba.normalize(dbaOb)
-
-# model design ------------------------------------------------------------
-
-dbaOb = dba.contrast(dbaOb, reorderMeta=list(Condition=baseline_condition))
-
-# Differential binding ----------------------------------------------------
-
-dbaOb <- dba.analyze(dbaOb, bGreylist=greylist, bBlacklist=FALSE)
-
-# save DBA ----------------------------------------------------------------
+# save DBA ---------------------------------------------------------------------
 
 save(dbaOb, file = paste0(diffbind.dir, "/DBA.Rdata"))
 
@@ -195,7 +188,7 @@ for (i in 1:length(dbaOb$contrasts)){
   
 }
 
-save(profiles_list[[i]], file = paste0(diffbind.dir,"profiles.Rdata"))
+save(profiles_list, file = paste0(diffbind.dir,"profiles.Rdata"))
      
 # session info ------------------------------------------------------------
 sessionInfo()

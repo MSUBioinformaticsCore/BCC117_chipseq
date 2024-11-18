@@ -69,8 +69,8 @@ done
 
 for fa in *${ext}.fa
 do
-#meme $fa -nmotifs 10 -evt 0.01 -p 16 -oc ${fa%.fa}_denovo_motifs
-streme -oc ${fa%.fa}_streme_denovo_motifs --dna --p $fa
+meme $fa -nmotifs 10 -evt 0.01 -p 16 -oc ${fa%.fa}_denovo_motifs
+#streme -oc ${fa%.fa}_streme_denovo_motifs --dna --p $fa
 done
 
 ################################################################## 

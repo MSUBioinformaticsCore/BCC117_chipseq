@@ -18,15 +18,10 @@ set.seed(1)
 sample_sheet = read.csv(args[1])
 
 # Read the chromsizes file (provided as the second argument)
-chromsizes = read.delim(args[2])
+chromsizes = args[2]
 
 # Set the output directory (provided as the third argument)
 outdir = args[3]
-
-# Example paths for testing purposes (commented out for production use)
-# sample_sheet = read.csv("/path/to/DiffBind_sample_sheet_consensus.csv")
-# chromsizes = "/path/to/sizes.genome"
-# outdir = "/path/to/results_directory"
 
 # Initialize an empty list to store greylist regions for each sample
 gl_list = list()

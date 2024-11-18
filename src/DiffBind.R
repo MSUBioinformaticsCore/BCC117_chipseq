@@ -59,7 +59,7 @@ baseline_condition = args[3]
 
 # Load sample sheet and greylist -----------------------------------------------
 
-# sample_sheet = read.csv("/mnt/research/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/data/sample_sheets/DiffBind_sample_sheet_consensus.csv")
+# sample_sheet = read.csv("/mnt/research/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/data/sample_sheets/DiffBind_sample_sheet_narrowPeak.csv")
 sample_sheet = read.csv(args[1])
 
 # custom_greylist = readRDS("/mnt/research/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/results/bwa/merged_library/greylist.Rds")

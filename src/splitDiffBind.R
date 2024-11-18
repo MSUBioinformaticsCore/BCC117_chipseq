@@ -10,8 +10,8 @@ library(tidyverse)
 dbPath = args[1]
 annoPath = args[2]
 
-#dbPath = "/mnt/research/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/results/bwa/mergedLibrary/diffbind"
-#annoPath = "/mnt/research/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/results/bwa/mergedLibrary/annotatePeaks"
+#dbPath = "/mnt/research/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/results/bwa/merged_library/diffbind"
+#annoPath = "/mnt/research/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/results/bwa/merged_library/annotatePeaks"
 
 dbFiles = list.files(dbPath, pattern = ".csv", full.names=T)
 dbList = lapply(dbFiles, read.csv)

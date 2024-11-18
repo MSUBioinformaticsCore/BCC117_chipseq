@@ -39,14 +39,14 @@ input = list.files(bam_path,
 input
 
 consensus = list.files(peak_path, 
-                       pattern = "_all.bed", 
+                       pattern = "consensus.peaks.bed", 
                        full.names = T)
 
 consensus 
 
 sheet = data.frame(bamReads = ip,
                    bamControl = input,
-                   Peaks = c(rep(consensus[1],4),
+                   Peaks = c(rep(consensus[1],3),
                              rep(consensus[2],3)),
                    PeakCaller = "bed")
 sheet = 

@@ -49,8 +49,7 @@ results <- findConsensusPeakRegions(
   narrowPeaks = narrowPeak_unlist,
   peaks = peak_unlist,
   chrInfo = chrInfo,
-  extendingSize = 25,
-  expandToFitPeakRegion = TRUE,
+  expandToFitPeakRegion = FALSE,
   shrinkToFitPeakRegion = TRUE,
   minNbrExp = length(narrow_peak_files)-1,
   nbrThreads = 16)

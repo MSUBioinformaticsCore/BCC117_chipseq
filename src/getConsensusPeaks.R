@@ -14,6 +14,7 @@ chromsizes = read.delim(args[1])
 chrInfo <- Seqinfo(seqnames=chromsizes$V1,
                    seqlengths=chromsizes$V2, isCircular=rep(FALSE, nrow(chromsizes)),
                    genome=chrom_file)
+
 narrow_peak_path = args[2]
 # narrow_peak_path = "/mnt/research/bioinformaticsCore/projects/thomashowm/BCC117_chipseq/results/bwa/merged_library/macs3/narrow_peak"
 narrow_peak_files = list.files(narrow_peak_path, 
@@ -22,8 +23,6 @@ narrow_peak_files = list.files(narrow_peak_path,
 pattern = args[3]
 # pattern = "cold"
 narrow_peak_files = narrow_peak_files[grepl(pattern, narrow_peak_files)]
-
-peak_names = basename(narrow_peak_files)
 
 narrowPeak_list = list()
 peak_list = list()
@@ -37,7 +36,7 @@ for(file in narrow_peak_files){
   
   names(narrowPeak_list[[REP]]) = rep(REP, length(narrowPeak_list[[REP]]))
   names(peak_list[[REP]]) = rep(REP, length(peak_list[[REP]]))
-
+  
 }
 
 narrowPeak_grl = GRangesList(narrowPeak_list)
@@ -45,9 +44,12 @@ narrowPeak_unlist = unlist(narrowPeak_grl)
 peak_grl = GRangesList(peak_list)
 peak_unlist =  unlist(peak_grl)
 
+median_width = median(width(narrowPeak_unlist))
+
 results <- findConsensusPeakRegions(
   narrowPeaks = narrowPeak_unlist,
   peaks = peak_unlist,
+  extendingSize = round(median_width/2),
   chrInfo = chrInfo,
   expandToFitPeakRegion = FALSE,
   shrinkToFitPeakRegion = TRUE,

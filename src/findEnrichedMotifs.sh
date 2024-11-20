@@ -43,9 +43,9 @@ bedtools getfasta -fi $genome \
   -name \
   > $outdir/motif_enrichment/$bed.fa
 
-remove duplicate sequences  
-https://stackoverflow.com/questions/61374573/how-can-i-eliminate-duplicated-sequences-in-fasta-file  
-awk 'BEGIN {i = 1;} { if ($1 ~ /^>/) { tmp = h[i]; h[i] = $1; } else if (!a[$1]) { s[i] = $1; a[$1] = "1"; i++; } else { h[i] = tmp; } } END { for (j = 1; j < i; j++) { print h[j]; print s[j]; } }' < $outdir/motif_enrichment/$bed.fa > $outdir/motif_enrichment/$bed.nodup.fa
+# remove duplicate sequences  
+# https://stackoverflow.com/questions/61374573/how-can-i-eliminate-duplicated-sequences-in-fasta-file  
+# awk 'BEGIN {i = 1;} { if ($1 ~ /^>/) { tmp = h[i]; h[i] = $1; } else if (!a[$1]) { s[i] = $1; a[$1] = "1"; i++; } else { h[i] = tmp; } } END { for (j = 1; j < i; j++) { print h[j]; print s[j]; } }' < $outdir/motif_enrichment/$bed.fa > $outdir/motif_enrichment/$bed.nodup.fa
 
 done
 
@@ -58,7 +58,7 @@ module load MEME/5.5.4-gompi-2022b
 
 cd $outdir/motif_enrichment
 
-for fa in *${ext}.nodup.fa
+for fa in *${ext}.fa
 do
 sea --p $fa --m $motif --oc ${fa%.fa}_known_motifs
 done

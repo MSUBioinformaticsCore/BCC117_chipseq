@@ -29,16 +29,19 @@ mkdir $SCRATCH/thomashowm/BCC117_chipseq
 ### Download reference genome and annotation
 ```{bash, eval=FALSE}
 mkdir $GENOME/arabidopsis_thaliana
-mkdir $GENOME/arabidopsis_thaliana/ensembl_release59
-cd $GENOME/arabidopsis_thaliana/ensembl_release59
+mkdir $GENOME/arabidopsis_thaliana/ensembl_release60
+cd $GENOME/arabidopsis_thaliana/ensembl_release60
 
-wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/fasta/arabidopsis_thaliana/dna/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa.gz 
+wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-60/fasta/arabidopsis_thaliana/dna/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa.gz 
 
-wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-59/gff3/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.59.gff3.gz
+wget https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-60/gff3/arabidopsis_thaliana/Arabidopsis_thaliana.TAIR10.60.gff3.gz
 
-mv $GENOME/arabidopsis_thaliana/ensembl_release59/Arabidopsis_thaliana.TAIR10.59.gff3.gz $GENOME/arabidopsis_thaliana/ensembl_release59/Arabidopsis_thaliana.TAIR10.59.gff.gz 
+mv $GENOME/arabidopsis_thaliana/ensembl_release60/Arabidopsis_thaliana.TAIR10.60.gff3.gz $GENOME/arabidopsis_thaliana/ensembl_release60/Arabidopsis_thaliana.TAIR10.60.gff.gz 
 
-gunzip $GENOME/arabidopsis_thaliana/ensembl_release59/Arabidopsis_thaliana.TAIR10.59.gff.gz
+gunzip $GENOME/arabidopsis_thaliana/ensembl_release60/Arabidopsis_thaliana.TAIR10.60.gff.gz
+
+module load cufflinks/2.2.1-linux-x86_64
+gffread Arabidopsis_thaliana.TAIR10.60.gff -T -o Arabidopsis_thaliana.TAIR10.60.gtf
 ```
 
 ### Install R packages
@@ -63,7 +66,7 @@ Rscript $PROJECT/src/packages.R
  
 ### Download exclusion regions
 
-The exclusion lists identify areas of the genome that have low mappability rates or contain high artifactual signals. Reads mapping to these regions should be masked out before applying ChIP-seq peak-calling software such as MACS2. `getExclusionList.R` uses `excluderanges v 0.99.8` to download the exclusion list for TAIR10 defined by the [Greenscreen](https://academic.oup.com/plcell/article/34/12/4795/6705244) pipeline.
+Exclusion lists identify areas of the genome that have low mappability rates or contain high artifactual signals. Reads mapping to these regions should be masked out before applying ChIP-seq peak-calling software such as MACS3. `getExclusionList.R` uses `excluderanges v 0.99.8` to download the exclusion list for TAIR10 defined by the [Greenscreen](https://academic.oup.com/plcell/article/34/12/4795/6705244) pipeline. Adds Mt and Pt chromosomes to blacklist.
 
 **Script**: `getExclusionList.R`
 
@@ -76,6 +79,12 @@ The exclusion lists identify areas of the genome that have low mappability rates
 `TAIR10.Klasfeld.arabidopsis_greenscreen_20inputs.bed` 
 
 ```{bash, eval=FALSE}
+# find Pt and Mt sizes
+cd $GENOME/arabidopsis_thaliana/ensembl_release60
+
+gunzip -c Arabidopsis_thaliana.TAIR10.dna.toplevel.fa.gz > Arabidopsis_thaliana.TAIR10.dna.toplevel.fa
+cut -f1,2 Arabidopsis_thaliana.TAIR10.dna.toplevel.fa.fai > sizes.genome
+
 module purge
 module load R-bundle-CRAN/2023.12-foss-2023a
 
@@ -85,7 +94,7 @@ Rscript $PROJECT/src/getExclusionList.R \
 
 ### Make nf-core sample sheet
 
-Sample sheet to specify the input to the nf-core/chipseq pipeline. See [here](https://nf-co.re/chipseq/2.0.0/docs/usage/) for more details. Script works for one antibody. Excludes `warm_input3`. 
+Sample sheet to specify the input to the nf-core/chipseq pipeline. See [here](https://nf-co.re/chipseq/2.0.0/docs/usage/) for more details. Script works for one antibody. Excludes `warm_input3`, `cold_IP3`, and `cold_input3`. 
 
 **Script**: `makeSampleSheet.R` specific for this analysis   
 
@@ -143,7 +152,7 @@ Download the most recent nf-core singularity container if you haven't already
 cd $PIPES/nfcore_chipseq
 
 nf-core download chipseq \
-  -r 2.0.0 \
+  -r 2.1.0 \
   -x none \
   -s singularity 
 ```
@@ -151,12 +160,12 @@ nf-core download chipseq \
 ## Run the nf-core chipseq pipeline
 
 ```{bash}
-nextflow run $PIPES/nfcore_chipseq/nf-core-chipseq_2.0.0/2_0_0 \
+nextflow run $PIPES/nfcore_chipseq/nf-core-chipseq_2.1.0/2_1_0 \
   --input $PROJECT/data/sample_sheets/sample_sheet.csv \
   --outdir $PROJECT/results \
-  --fasta $GENOME/arabidopsis_thaliana/ensembl_release59/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa \
-  --gff $GENOME/arabidopsis_thaliana/ensembl_release59/Arabidopsis_thaliana.TAIR10.59.gff \
-  --blacklist $GENOME/arabidopsis_thaliana/TAIR10.Klasfeld.arabidopsis_greenscreen_20inputs.bed \
+  --fasta $GENOME/arabidopsis_thaliana/ensembl_release60/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa \
+  --gtf $GENOME/arabidopsis_thaliana/ensembl_release60/Arabidopsis_thaliana.TAIR10.60.gtf \
+  --blacklist $GENOME/arabidopsis_thaliana/ensembl_release60/TAIR10.Klasfeld.arabidopsis_greenscreen_20inputs_MtPt.bed \
   --narrow_peak \
   --read_length 150 \
   -profile singularity \
@@ -164,24 +173,71 @@ nextflow run $PIPES/nfcore_chipseq/nf-core-chipseq_2.0.0/2_0_0 \
   -w $SCRATCH/thomashowm/BCC117_chipseq 
 ```
 
-## Find high confidence peaks for each condition with Chip-R
+## Get chromosome size file
 
-Install Chip-R
 ```{bash}
-conda install chip-r
+module purge
+module load SAMtools/1.19.2-GCC-13.2.0
+
+fasta=$GENOME/arabidopsis_thaliana/ensembl_release60/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa
+
+samtools faidx $fasta
+
+cut -f1,2 ${fasta}.fai > $GENOME/arabidopsis_thaliana/ensembl_release60/sizes.genome
 ```
 
-Run Chip-R
-```{bash}
-cd $PROJECT/results/bwa/mergedLibrary/macs2/narrowPeak
+## Consensus peaks
 
-for g in cold warm
-do 
-chipr \
-  -i ${g}*_peaks.narrowPeak \
-  -m 2 \
-  -o ${g}.consensus.narrowPeak
-done
+Uses [*consensusSeekeR*](https://www.bioconductor.org/packages/release/bioc/html/consensusSeekeR.html) to identify peaks shared between n-1 replicates of a condition. Within each peak, MACS3 reports the location highest signal intensity. *consensusSeekeR* calculates the median location of highest intensity among overlapping peaks. The width of the consensus peak is the merged width of the replicate peaks.
+
+**Script**: `getConsensusPeaks.R`  
+
+**Arguments**
+
+1. path chrom sizes file    
+2. path to narrowPeak files    
+3. Pattern distinguishing which files belong to which group   
+
+**Output**: `path/to/narrowPeak_files/<pattern>_consensus.peaks.bed` 
+
+```{bash}
+module purge
+module load R-bundle-CRAN/2023.12-foss-2023a
+
+# warm consensus
+Rscript $PROJECT/src/getConsensusPeaks.R \
+  $GENOME/arabidopsis_thaliana/ensembl_release60/sizes.genome \
+  $PROJECT/results/bwa/merged_library/macs3/narrow_peak \
+  warm 
+
+# cold consensus
+Rscript $PROJECT/src/getConsensusPeaks.R \
+  $GENOME/arabidopsis_thaliana/ensembl_release60/sizes.genome \
+  $PROJECT/results/bwa/merged_library/macs3/narrow_peak \
+  cold 
+```
+
+## Find condition-specific consensus peaks 
+
+```{bash}
+module purge
+module load BEDTools/2.31.0-GCC-12.3.0
+cd $PROJECT/results/bwa/merged_library/macs3/narrow_peak
+
+# cold only
+bedtools intersect \
+  -a cold_consensus.peaks.bed  \
+  -b warm_consensus.peaks.bed \
+  -v \
+  > cold_only.consensus.bed 
+
+# warm only  
+bedtools intersect \
+  -a warm_consensus.peaks.bed \
+  -b cold_consensus.peaks.bed \
+  -v \
+  > warm_only.consensus.bed
+  
 ```
 
 ## Differential binding analysis
@@ -202,7 +258,7 @@ Make a `.csv` file with the following columns:
 5. `Peaks`: path to the consensus peak `.bed` files
 6. `PeakCaller`: bed
 
-**Script**: `makeDiffBindSampleSheet.R`, specfic to this project   
+**Script**: `makeDiffBindSampleSheet.R`, specific to this project   
 
 **Arguments** 
 
@@ -212,7 +268,8 @@ Make a `.csv` file with the following columns:
 
 **Output**
 
-`data/sample_sheets/DiffBind_sample_sheet.csv`
+`data/sample_sheets/DiffBind_sample_sheet_consensus.csv`
+`data/sample_sheets/DiffBind_sample_sheet_narrowPeak.csv`
 
 ```{bash}
 module purge
@@ -220,28 +277,54 @@ module load R-bundle-CRAN/2023.12-foss-2023a
 
 # specific for this project
 Rscript $PROJECT/src/makeDiffBindSampleSheet.R \
-  $PROJECT/results/bwa/mergedLibrary \
-  $PROJECT/results/bwa/mergedLibrary/macs2/narrowPeak \
+  $PROJECT/results/bwa/merged_library \
+  $PROJECT/results/bwa/merged_library/macs3/narrow_peak \
   $PROJECT/data
 
 ```
 
-### Greylists
+### Make a custom Greylist
 
 From the Diffbind tutorial:
 
-> Greylists are specific to a ChIP-seq experiment, and are derived from the controls generated as part of the experiment[4]. The idea is to analyze libraries that are not meant to show systematic enrichment (such as Inputs, in which no anti-body is introduced), and identify anomalous regions where a disproportionate degree of signal is present. These regions can then be excluded from subsequent analysis.
+> Greylists are specific to a ChIP-seq experiment, and are derived from the controls generated as part of the experiment. The idea is to analyze libraries that are not meant to show systematic enrichment (such as Inputs, in which no anti-body is introduced), and identify anomalous regions where a disproportionate degree of signal is present. These regions can then be excluded from subsequent analysis.
 >  Application of greylists prevents identification of problematic genomic regions in the materials used in the experiment as being differentially bound. For example, these could include areas of high copy-number alterations in a cell line.
 >  Prior to version 3.0, the default in DiffBind has been to simply subtract control reads from ChIP reads in order to dampen the magnitude of enrichment in anomalous regions. Greylists represent a more principled way of accomplishing this. If a greylist has been applied, the current default in DiffBind is to not subtract control reads.
+
+### Make greylist
+
+**Script:** `run_customGreylist.sh`
+
+**Arguments**
+
+1. Path to the DiffBind sample sheet 
+2. Path to the sizes.genome file (tab-delimited file with chromosome sizes)   
+3. Output directory for the results   
+4. Path to customGreylist.R    
+
+**Output**
+
+`greylist.Rds`: An RDS file containing the greylist information.
+
+```{bash}
+cd $PROJECT/run
+
+sbatch $PROJECT/src/run_customGreylist.sh \
+  $PROJECT/data/sample_sheets/DiffBind_sample_sheet_consensus.csv \
+  $GENOME/arabidopsis_thaliana/ensembl_release60/sizes.genome \
+  $PROJECT/results/bwa/merged_library \
+  $PROJECT/src/customGreylist.R 
+```
 
 ### Run `runDiffBind.sh`
 
 **Arguments**
 
-1. Path to sample sheet   
-2. Path to results dir    
-3. Whether to use a greylist TRUE/FALSE     
-4. Path to `DiffBind.R`   
+1. Path to the DiffBind sample sheet    
+2. Output directory for the results    
+3. Baseline condition   
+4. Path to `greylist.Rds`   
+5. Path to `DiffBind.R`   
 
 **Output**
 
@@ -255,9 +338,10 @@ From the Diffbind tutorial:
 cd $PROJECT/run
 
 sbatch $PROJECT/src/runDiffBind.sh \
-  $PROJECT/data/DiffBind_samplesheet_consensus.csv \
-  $PROJECT/results \ 
-  TRUE \
+  $PROJECT/data/sample_sheets/DiffBind_sample_sheet_consensus.csv \
+  $PROJECT/results \
+  "warm" \
+  $PROJECT/results/bwa/merged_library/greylist.Rds \
   $PROJECT/src/DiffBind.R
 
 ```
@@ -274,7 +358,7 @@ module load BLAT/3.7-GCC-12.3.0
 PATH=$PATH:/mnt/research/bioinformaticsCore/software/HOMER/.//bin/
 
 # make an annotation dir
-mkdir $PROJECT/results/bwa/mergedLibrary/annotatePeaks
+mkdir $PROJECT/results/annotatePeaks
 ```
 
 Install the genome/annotation package for the genome of interest
@@ -299,27 +383,39 @@ perl /mnt/research/bioinformaticsCore/software/HOMER/configureHomer.pl -install 
   1. Path to the directory containing peak files in bed format   
   2. Path to output directory     
   3. Pattern in the file names you want to annotate   
-  4. The genome/annotation package for your genome of interest    
+  4. The genome/annotation package for your genome of interest
   5. Homer motif file if you have one   
+  6. The gft file you want the annotations to come from     
 
 ```{bash,eval=FALSE}
 cd $PROJECT/run
 
 # consensus peaks
 sbatch $PROJECT/src/annotatePeaks.sh \
-  $PROJECT/results/bwa/mergedLibrary/macs2/narrowPeak \
-  $PROJECT/results/bwa/mergedLibrary/annotatePeaks \
-  _all.bed \
+  $PROJECT/results/bwa/merged_library/macs3/narrow_peak \
+  $PROJECT/results/annotatePeaks \
+  _consensus.peaks.bed \
   tair10 \
-  NONE
+  NONE \
+  $GENOME/arabidopsis_thaliana/ensembl_release60/Arabidopsis_thaliana.TAIR10.60.gtf 
+  
+# condition-specific peaks
+sbatch $PROJECT/src/annotatePeaks.sh \
+  $PROJECT/results/bwa/merged_library/macs3/narrow_peak \
+  $PROJECT/results/annotatePeaks \
+  _only.consensus.bed \
+  tair10 \
+  NONE \
+  $GENOME/arabidopsis_thaliana/ensembl_release60/Arabidopsis_thaliana.TAIR10.60.gtf 
   
 # diff peaks
 sbatch $PROJECT/src/annotatePeaks.sh \
-  $PROJECT/results/bwa/mergedLibrary/diffbind \
-  $PROJECT/results/bwa/mergedLibrary/annotatePeaks \
+  $PROJECT/results/diffbind \
+  $PROJECT/results/annotatePeaks \
   .bed \
   tair10 \
-  NONE 
+  NONE \
+  $GENOME/arabidopsis_thaliana/ensembl_release60/Arabidopsis_thaliana.TAIR10.60.gtf
 
 ```
 
@@ -345,11 +441,13 @@ module purge
 module load R-bundle-CRAN/2023.12-foss-2023a
 
 Rscript $PROJECT/src/splitDiffBind.R \
-  $PROJECT/results/bwa/mergedLibrary/diffbind \
-  $PROJECT/results/bwa/mergedLibrary/annotatePeaks
+  $PROJECT/results/diffbind \
+  $PROJECT/results/annotatePeaks
 ```
 
 ## Gene Ontology enrichment
+
+`getGOenrichment.R` uses [`topGO v2.54.0`](https://bioconductor.org/packages/release/bioc/html/topGO.html) with Fisher's exact test and the gene ontology annotations from a species-specific bioconductor annotation package to check for enrichment of genes related to specific biological processes, molecular functions, and cellular compartments among genes near ChIP peaks. Only GO terms with 5 > n genes > 200 are included. GO terms containing several hundred genes are often overly broad and, therefore, uninformative. 
 
 **Script**: `getGOenrichment.R`
 
@@ -371,10 +469,10 @@ Rscript $PROJECT/src/splitDiffBind.R \
 module purge
 module load R-bundle-CRAN/2023.12-foss-2023a
 
-Rscript $PROJECT/src/getGOenrichment.sh \
+Rscript $PROJECT/src/getGOenrichment.R \
   $PROJECT/src/ChIPSeqFunctions.R \
-  $PROJECT/results/bwa/mergedLibrary/annotatePeaks \
-  $PROJECT/results/bwa/mergedLibrary \
+  $PROJECT/results/annotatePeaks \
+  $PROJECT/results \
   .anno \
   org.At.tair.db \
   $SOFTWARE/HOMER/data/accession/arabidopsis.description 
@@ -413,17 +511,26 @@ cd $PROJECT/run
 MOTIFDB=/mnt/research/bioinformaticsCore/shared/motif_databases/20241006_MEME_motifs/motif_databases/ARABD/ArabidopsisDAPv1.meme
 
 sbatch $PROJECT/src/findEnrichedMotifs.sh \
-  $PROJECT/results/bwa/mergedLibrary/diffbind \
-  $PROJECT/results/bwa/mergedLibrary \
+  $PROJECT/results/diffbind \
+  $PROJECT/results \
   .bed \
   $MOTIFDB \
-  $GENOME/arabidopsis_thaliana/ensembl_release59/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa
+  $GENOME/arabidopsis_thaliana/ensembl_release60/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa
   
 sbatch $PROJECT/src/findEnrichedMotifs.sh \
-  $PROJECT/results/bwa/mergedLibrary/macs2/narrowPeak \
-  $PROJECT/results/bwa/mergedLibrary \
-  .narrowPeak_all.bed \
+  $PROJECT/results/bwa/merged_library/macs3/narrow_peak \
+  $PROJECT/results \
+  _consensus.peaks.bed \
   $MOTIFDB \
-  $GENOME/arabidopsis_thaliana/ensembl_release59/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa
+  $GENOME/arabidopsis_thaliana/ensembl_release60/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa
+  
+sbatch $PROJECT/src/findEnrichedMotifs.sh \
+  $PROJECT/results/bwa/merged_library/macs3/narrow_peak \
+  $PROJECT/results \
+  _only.consensus.bed \
+  $MOTIFDB \
+  $GENOME/arabidopsis_thaliana/ensembl_release60/Arabidopsis_thaliana.TAIR10.dna.toplevel.fa
+```
+
 ```
 

@@ -55,7 +55,10 @@ Install the R packages required for this analysis:
  * [`plyranges`](https://www.bioconductor.org/packages/release/bioc/html/plyranges.html)   
  * [`profileplyr`](https://www.bioconductor.org/packages/release/bioc/html/profileplyr.html)   
  * [`DiffBind`](https://bioconductor.org/packages/release/bioc/html/DiffBind.html)   
- * [`tidyverse`](https://www.tidyverse.org)   
+ * [`tidyverse`](https://www.tidyverse.org)  
+ * [`excluderanges`](https://bioconductor.org/packages/release/data/annotation/html/excluderanges.html)     
+ * [`consensusSeekeR`](https://bioconductor.org/packages/release/bioc/html/consensusSeekeR.html)    
+ * [`GreyListChIP`](https://bioconductor.org/packages/devel/bioc/html/GreyListChIP.html)   
  
 ```{bash}
 module purge

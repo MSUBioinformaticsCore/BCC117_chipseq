@@ -3,6 +3,7 @@ if (!require("BiocManager", quietly = TRUE))
 
 bioc = c("org.At.tair.db", "topGO", "AnnotationHub", 
          "GenomicRanges", "plyranges", "profileplyr",
-         "DiffBind")
+         "DiffBind", "excluderanges", "consensusSeekeR",
+         "GreyListChIP")
 
 install.packages("tidyverse")

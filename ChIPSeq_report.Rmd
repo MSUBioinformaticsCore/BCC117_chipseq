@@ -373,7 +373,7 @@ print(p)
 
 ## Nearest gene annotation files
 
-We used `annotatePeaks.pl` from [HOMER v4.7.2](http://homer.ucsd.edu/homer/ngs/annotation.html) to identify the nearest gene to each peak, and to find instances of the supplied motif sequence within each peak.
+We used `annotatePeaks.pl` from [HOMER v5.1](http://homer.ucsd.edu/homer/ngs/annotation.html) to identify the nearest gene to each peak, and to find instances of the supplied motif sequence within each peak.
 
 These files contain the annotation information for each peak
 ```{r, echo=FALSE}
@@ -480,9 +480,9 @@ htmltools::tagList(t_list)
 
 ## Motif Enrichment
 
-We used the [`streme`](https://meme-suite.org/meme/doc/meme.html?man_type=web) and [`sea`](https://meme-suite.org/meme/doc/sea.html?man_type=web) from [MEME v5.4.1](https://meme-suite.org/meme/index.html) to discover novel, de novo motifs and find enrichment for known motifs, respectively.
+We used the [`streme`](https://meme-suite.org/meme/doc/meme.html?man_type=web) and [`sea`](https://meme-suite.org/meme/doc/sea.html?man_type=web) from [MEME v5.5.4](https://meme-suite.org/meme/index.html) to discover novel, de novo motifs and find enrichment for known motifs, respectively.
 
-Known motifs came from the [JASPAR 2018](https://jaspar2018.genereg.net/) core vertebrates non-redundant database, downloaded in meme format [here](https://meme-suite.org/meme/doc/download.html).
+Known motifs came from DNA affinity purification sequencing (DAP-seq), a high-throughput TF binding site discovery method that interrogates genomic DNA with in-vitro-expressed TFs (O'Malley et al., Cell, 165:1280-1292, 2016).
 
 Each sample has one folder for de novo motifs and one folder for known motifs.
 
@@ -640,7 +640,7 @@ print(p)
 
 ## Nearest gene annotation files
 
-We used `annotatePeaks.pl` from [HOMER v4.7.2](http://homer.ucsd.edu/homer/ngs/annotation.html) to identify the nearest gene to each peak, and to find instances of the supplied motif sequence within each peak.
+We used `annotatePeaks.pl` from [HOMER v5.1](http://homer.ucsd.edu/homer/ngs/annotation.html) to identify the nearest gene to each peak, and to find instances of the supplied motif sequence within each peak.
 
 These files contain the annotation information for each peak
 ```{r, echo=FALSE}
@@ -747,9 +747,9 @@ htmltools::tagList(t_list)
 
 ## Motif Enrichment
 
-We used the [`streme`](https://meme-suite.org/meme/doc/meme.html?man_type=web) and [`sea`](https://meme-suite.org/meme/doc/sea.html?man_type=web) from [MEME v5.4.1](https://meme-suite.org/meme/index.html) to discover novel, de novo motifs and find enrichment for known motifs, respectively.
+We used the [`streme`](https://meme-suite.org/meme/doc/meme.html?man_type=web) and [`sea`](https://meme-suite.org/meme/doc/sea.html?man_type=web) from [MEME v5.5.4](https://meme-suite.org/meme/index.html) to discover novel, de novo motifs and find enrichment for known motifs, respectively.
 
-Known motifs came from the [JASPAR 2018](https://jaspar2018.genereg.net/) core vertebrates non-redundant database, downloaded in meme format [here](https://meme-suite.org/meme/doc/download.html).
+Known motifs came from DNA affinity purification sequencing (DAP-seq), a high-throughput TF binding site discovery method that interrogates genomic DNA with in-vitro-expressed TFs (O'Malley et al., Cell, 165:1280-1292, 2016).
 
 Each sample has one folder for de novo motifs and one folder for known motifs.
 
@@ -851,7 +851,7 @@ paste0("results/motif_enrichment/", files)
 
 # Diffbind
 
-We used [DiffBind v3.8.4](https://bioconductor.org/packages/release/bioc/html/DiffBind.html) to identify peaks differentially bound between each pair of conditions. Specifically, for each pair of conditions, a union peakset was derived that includes peaks present in at least two samples. A custom greylist was built using the inputs for each sample the For each replicate of the two conditions, the reads within the union peak set are counted and normalized by the total read depth. Then, the normalized counts from each condition are compared to see if there is a significant difference (FDR < .05) in the number of reads within each peak between conditions. 
+We used [DiffBind v3.8.4](https://bioconductor.org/packages/release/bioc/html/DiffBind.html) to identify peaks differentially bound between each pair of conditions. Specifically, for each pair of conditions, a union peakset was derived that includes peaks present in at least two samples. A custom greylist was built using the inputs for each sample using [GreyListChIP v 1.34.0](https://bioconductor.org/packages/release/bioc/html/GreyListChIP.html). For each replicate of the two conditions, the reads within the union peak set are counted and normalized by the total read depth. Then, the normalized counts from each condition are compared to see if there is a significant difference (FDR < .05) in the number of reads within each peak between conditions. 
 
 ### Results files
 
@@ -871,6 +871,7 @@ paste0("results/diffbind/", basename(files))
  * `Conc_Condition2`: The average normalized counts across condition 2. Very small numbers are reported as 0.     
  * `Fold`: The log2(Conc_Condition1/Conc_Condition2) fold change. Negative indicates a decreased occupancy in condition 1 relative to condition 2       
  * `pvalue`: the fold change p-value calculated by `DESeq2`        
+ * `FDR`: multiple-testing corrected pvalue calculated by `DESeq2`        
  * `Contrast`: The two conditions being compared    
  * `PeakID`: The id for the differential peak   
  * `Entrez.ID`: The Entrez.ID for the nearest gene TSS        
@@ -985,7 +986,7 @@ for(h in 1:length(file_names)){
 
 ## Nearest gene annotation files
 
-We used `annotatePeaks.pl` from [HOMER v4.7.2](http://homer.ucsd.edu/homer/ngs/annotation.html) to identify the nearest gene to each peak, and to find instances of the supplied motif sequence within each peak.
+We used `annotatePeaks.pl` from [HOMER v5.1](http://homer.ucsd.edu/homer/ngs/annotation.html) to identify the nearest gene to each peak, and to find instances of the supplied motif sequence within each peak.
 
 These files contain the annotation information for each peak
 ```{r, echo=FALSE}
@@ -1043,7 +1044,7 @@ htmltools::tagList(t_list)
 
 ## Gene ontology enrichment
 
-We used [`topGO v2.50.0`](https://bioconductor.org/packages/release/bioc/html/topGO.html) with Fisher's exact test and the gene ontoloy annotations from the [`org.Hs.eg.db v3.16.0`](https://bioconductor.org/packages/release/data/annotation/html/org.Hs.eg.db.html) bioconductor annotation package to check for enrichment of genes related to specific biological processes, molecular functions, and cellular compartments among genes near ChIP peaks. Only GO terms with 5 > n genes > 200 were included. GO terms containing several hundred genes are often overly broad and, therefore, uninformative. 
+We used [`topGO v2.54.0`](https://bioconductor.org/packages/release/bioc/html/topGO.html) with Fisher's exact test and the gene ontoloy annotations from the [`org.At.tair.db v 3.18.0`](https://bioconductor.org/packages/release/data/annotation/html/org.At.tair.db.html) bioconductor annotation package to check for enrichment of genes related to specific biological processes, molecular functions, and cellular compartments among genes near ChIP peaks. Only GO terms with 5 > n genes > 200 were included. GO terms containing several hundred genes are often overly broad and, therefore, uninformative. 
 
 ### Gene Ontology enrichment files 
 
@@ -1093,9 +1094,9 @@ htmltools::tagList(t_list)
  
 ## Motif Enrichment
 
-We used the [`meme`](https://meme-suite.org/meme/doc/meme.html?man_type=web) and [`sea`](https://meme-suite.org/meme/doc/sea.html?man_type=web) from [MEME v5.4.1](https://meme-suite.org/meme/index.html) to discover novel, de novo motifs and find enrichment for known motifs, respectively.
+We used the [`meme`](https://meme-suite.org/meme/doc/meme.html?man_type=web) and [`sea`](https://meme-suite.org/meme/doc/sea.html?man_type=web) from [MEME v5.5.4](https://meme-suite.org/meme/index.html) to discover novel, de novo motifs and find enrichment for known motifs, respectively.
 
-Known motifs came from the [JASPAR 2018](https://jaspar2018.genereg.net/) core vertebrates non-redundant database, downloaded in meme format [here](https://meme-suite.org/meme/doc/download.html).
+Known motifs came from DNA affinity purification sequencing (DAP-seq), a high-throughput TF binding site discovery method that interrogates genomic DNA with in-vitro-expressed TFs (O'Malley et al., Cell, 165:1280-1292, 2016).
 
 Each sample has one folder for de novo motifs and one folder for known motifs. Folders labeled "gain" or "loss" only contain peaks with a gain or loss of occupancy. Otherwise the file contains all significantly differentially bound peaks.
 

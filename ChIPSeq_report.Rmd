@@ -82,6 +82,8 @@ See the quality report for trimmed reads in the (trimmed) sections of the `multi
 
 We use [bwa v 0.7.18-r1243-dirty](https://bio-bwa.sourceforge.net) to align reads to the reference genome. 
 
+Exclusion lists identify areas of the genome that have low mappability rates or contain high artifactual signals. We used `excluderanges v 0.99.8` to download the exclusion list for TAIR10 defined by the [Greenscreen](https://academic.oup.com/plcell/article/34/12/4795/6705244) pipeline. Reads mapping to these regions are removed ChIP-seq peak-calling software such as MACS3. 
+
 We remove identical, or duplicate, reads these using the [`MarkDuplicates`](https://gatk.broadinstitute.org/hc/en-us/articles/360037052812-MarkDuplicates-Picard-) tool in picard 3.2.0-1-g3948afb6b to avoid double counting the same read.
 
 The plots below show the raw total number of sequences and the number of properly paired after filtering out reads with the following criteria: 
